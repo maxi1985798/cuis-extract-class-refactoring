@@ -1,8 +1,18 @@
-'From Cuis 6.0 [latest update: #5981] on 29 September 2023 at 1:00:02 am'!
+'From Cuis 6.0 [latest update: #5981] on 4 October 2023 at 12:43:34 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 1!
+!provides: 'ExtractClassRefactoring' 1 2!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
+
+!classDefinition: #CodeExtractorWithoutTemporariesVisitor category: 'ExtractClassRefactoring'!
+ParseNodeVisitor subclass: #CodeExtractorWithoutTemporariesVisitor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ExtractClassRefactoring'!
+!classDefinition: 'CodeExtractorWithoutTemporariesVisitor class' category: 'ExtractClassRefactoring'!
+CodeExtractorWithoutTemporariesVisitor class
+	instanceVariableNames: ''!
 
 !classDefinition: #ExtractClassRefactoringTest category: 'ExtractClassRefactoring'!
 RefactoringTest subclass: #ExtractClassRefactoringTest
@@ -16,7 +26,7 @@ ExtractClassRefactoringTest class
 
 !classDefinition: #ExtractClassRefactoring category: 'ExtractClassRefactoring'!
 Refactoring subclass: #ExtractClassRefactoring
-	instanceVariableNames: 'sourceClass targetClassName instVarsToExtract methodsToExtract variableToAccessToNewClass sourceClass_CHANGE_ME targetClassName_CHANGE_ME instanceVariableNameForSourceClass instVarToExtract_CHANGE_ME methodsToExtract_CHANGE_ME'
+	instanceVariableNames: 'sourceClass targetClassName instVarsToExtract methodsToExtract variableToAccessToNewClass instanceVariableNameForSourceClass'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -130,7 +140,7 @@ test006variableToAccessNewClassShouldNotBeNil
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeNilErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/29/2023 00:57:44'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/3/2023 00:01:15'!
 test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -152,7 +162,64 @@ test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	self assert: [ targetClass notNil ].
 	self assert: [sourceClass instVarNames includes: 'aTargetClass'].
 	self assert: 'initialize
-	aTargetClass := TargetClass new.' equals: (sourceClass sourceCodeAt: #initialize).! !
+	aTargetClass := TargetClass new.
+	super initialize.' equals: (sourceClass sourceCodeAt: #initialize).! !
+
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/3/2023 22:46:07'!
+test100_1extractClassShouldReuseInitialize
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
+	sourceClass compile: 'initialize
+	^self.' .
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aTargetClass'
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := Smalltalk classNamed: #TargetClass.
+	self assert: [ targetClass notNil ].
+	self assert: [sourceClass instVarNames includes: 'aTargetClass'].
+	self assert: 'initialize
+	aTargetClass := TargetClass new.
+	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
+
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/3/2023 23:12:04'!
+test100_2extractClassShouldReuseInitialize
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
+	sourceClass compile: 'initialize
+	| tmpvar |
+	tmpvar := 1.
+	^self.' .
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aTargetClass'
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := Smalltalk classNamed: #TargetClass.
+	self assert: [ targetClass notNil ].
+	self assert: [sourceClass instVarNames includes: 'aTargetClass'].
+	self assert: 'initialize
+	| tmpvar |
+	aTargetClass := TargetClass new.
+	tmpvar := 1.
+	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
 !ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
 test101GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
@@ -228,8 +295,9 @@ initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anI
 	methodsToExtract := collectionOfMethodsToExtract.
 	variableToAccessToNewClass := anInstanceVariableNameForSourceClass! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 9/29/2023 00:57:01'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/4/2023 00:41:19'!
 apply
+	| newSourceInitialize |
 	Object 
 		subclass: targetClassName 
 		instanceVariableNames: (instVarsToExtract inject: '' into: [:sum :each | sum , ' ', each])
@@ -237,7 +305,32 @@ apply
 		poolDictionaries: ''
 		category: sourceClass category .
 	sourceClass addInstVarName: variableToAccessToNewClass.
-	sourceClass compile: 'initialize', String newLineString, String tab, variableToAccessToNewClass, ' := ', targetClassName, ' new.'! !
+	sourceClass methodDict 
+		at: #initialize 
+		ifPresent:  [ :initializeCompiledMethod |
+			newSourceInitialize := self newSourceCodeForInitializeWhenExists: initializeCompiledMethod.
+			]
+		ifAbsent: [
+			newSourceInitialize := 'initialize', String newLineString, String tab, variableToAccessToNewClass, ' := ', targetClassName, ' new.'.
+			newSourceInitialize := newSourceInitialize, String newLineString, String tab, 'super initialize.'.
+			].
+	sourceClass compile: newSourceInitialize! !
+
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/4/2023 00:20:37'!
+newSourceCodeForInitializeWhenExists: initializeCompiledMethod 
+	| codeForTemporaries newSourceInitialize originalSourceInitialize rangesForTmpVars |
+	originalSourceInitialize := sourceClass sourceCodeAt: #initialize.
+	rangesForTmpVars := initializeCompiledMethod methodNode 
+							completeSourceRangesOf: initializeCompiledMethod methodNode
+							temporariesDeclaration ifAbsent: [
+								newSourceInitialize := 'initialize', String newLineString, String tab, variableToAccessToNewClass, ' := ', targetClassName, ' new.'.
+								newSourceInitialize := newSourceInitialize, (originalSourceInitialize copyFrom: 11 to: originalSourceInitialize size).
+								^newSourceInitialize].
+	rangesForTmpVars := rangesForTmpVars detectMin: [ :anInterval | anInterval first].
+	codeForTemporaries := initializeCompiledMethod sourceCode copyFrom: rangesForTmpVars first to: rangesForTmpVars last.
+	newSourceInitialize := 'initialize', String newLineString, String tab, codeForTemporaries, String newLineString, String tab, variableToAccessToNewClass, ' := ', targetClassName, ' new.'.
+	newSourceInitialize := newSourceInitialize, (originalSourceInitialize copyFrom: (rangesForTmpVars last + 1) to: originalSourceInitialize size).
+	^newSourceInitialize! !
 
 !ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 9/28/2023 00:53:32'!
 from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  
