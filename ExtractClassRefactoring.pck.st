@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 19 October 2023 at 11:43:06 pm'!
+'From Cuis 6.0 [latest update: #5981] on 29 October 2023 at 3:37:41 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 4!
+!provides: 'ExtractClassRefactoring' 1 5!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -16,7 +16,7 @@ CodeExtractorWithoutTemporariesVisitor class
 
 !classDefinition: #ExtractClassForm category: 'ExtractClassRefactoring'!
 SystemWindow subclass: #ExtractClassForm
-	instanceVariableNames: 'discardEdits firstTimeBuild scrollPane formLayout hierarchySection messageSendingListSection ifNilChecks actionButtonsSection messageListModel introduceNullObjectRequest instanceVariableListSection instanceVariableListModel'
+	instanceVariableNames: 'scrollPane formLayout newClassNameSection messageSendingListSection actionButtonsSection messageListModel introduceNullObjectRequest instanceVariableListSection instanceVariableListModel newClassNameModel variableNameToAccessNewClassModel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -46,7 +46,7 @@ ExtractClassRefactoring class
 
 !classDefinition: #ExtractClassApplier category: 'ExtractClassRefactoring'!
 RefactoringApplier subclass: #ExtractClassApplier
-	instanceVariableNames: 'class classToRefactor form'
+	instanceVariableNames: 'class classToRefactor form extractClassRequest'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -72,6 +72,16 @@ Object subclass: #ClassAllMessageListModel
 	category: 'ExtractClassRefactoring'!
 !classDefinition: 'ClassAllMessageListModel class' category: 'ExtractClassRefactoring'!
 ClassAllMessageListModel class
+	instanceVariableNames: ''!
+
+!classDefinition: #ExtractClassObjectRequest category: 'ExtractClassRefactoring'!
+Object subclass: #ExtractClassObjectRequest
+	instanceVariableNames: 'newClassNameModel methodsToMoveModel instanceVariblesToMoveModel messageListModel instanceVariableListModel variableNameToAccessNewClassModel'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ExtractClassRefactoring'!
+!classDefinition: 'ExtractClassObjectRequest class' category: 'ExtractClassRefactoring'!
+ExtractClassObjectRequest class
 	instanceVariableNames: ''!
 
 !classDefinition: #TesisExtractClassRefactoringMenu category: 'ExtractClassRefactoring'!
@@ -134,8 +144,8 @@ buildCancelButton
 
 	^button! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/18/2023 23:59:10'!
-buildMessageSendingListSection
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/20/2023 01:43:38'!
+buildMethodsToMoveListSection
 	| list |
 "
 	list := PluggableListMorph
@@ -164,23 +174,21 @@ buildMessageSendingListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/19/2023 01:42:05'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/20/2023 01:43:38'!
 buildMorphicWindow
-	
-	firstTimeBuild := true.
 	
 	self initializeScrollableContainer.
 	self initializeFormLayout.
 	scrollPane scroller addMorph: formLayout.
 	formLayout axisEdgeWeight: #columnTop.
 
-	hierarchySection := self buildNullObjectHierarchyClassesSection.
-	formLayout addMorph: hierarchySection.
+	newClassNameSection := self buildNullObjectHierarchyClassesSection.
+	formLayout addMorph: newClassNameSection.
 
 	instanceVariableListSection := self buildinstanceVariableListSection.
 	formLayout addMorph: instanceVariableListSection.
 
-	messageSendingListSection := self buildMessageSendingListSection.
+	messageSendingListSection := self buildMethodsToMoveListSection.
 	formLayout addMorph: messageSendingListSection.
 	
 
@@ -198,25 +206,31 @@ buildMorphicWindow
 	
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/19/2023 01:49:50'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/26/2023 22:47:08'!
 buildNullObjectHierarchyClassesSection
 
-	| section maxLabelWidth nullClassInput |
+	| section maxLabelWidth nullClassInput variableNameInput |
 
 	section := FormSection withTitle: 'Extract class title' withColor: self backgroundColor.
 
-	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
 self halt.
+	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
+	newClassNameModel := TextModel withText: 'NameOfNewClass'.
 	nullClassInput := LabeledInput 
 					withLabel: 'New class name'
 					withWidth: maxLabelWidth
-					withModel: (TextModel withText: 'NameOfNewClass')
+					withModel: newClassNameModel
 					usingAs: self.
+
+	variableNameToAccessNewClassModel := TextModel withText: 'NameOfVariable'.
+	variableNameInput := LabeledInput 
+					withLabel: 'variable name to access new class'
+					withWidth: maxLabelWidth
+					withModel: variableNameToAccessNewClassModel
+					usingAs: self.
+
 	section addMorph: nullClassInput.
-"
-	concreteClassInput := LabeledInput withLabel: 'Concrete Class' withWidth: maxLabelWidth withModel: introduceNullObjectRequest concreteClassNameModel usingAs: self.
-	section addMorph: concreteClassInput.
-"
+	section addMorph: variableNameInput.
 	section layoutSpec: (self layoutSpecForSection: section).
 
 	^section
@@ -283,14 +297,12 @@ initializeScrollableContainer
 	scrollPane color: self backgroundColor.
 	self layoutMorph addMorphUseAll: scrollPane.! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/18/2023 00:58:07'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/20/2023 01:40:56'!
 initializeWithModel: aModel 
 
 	super model: aModel.
 	
 	self setLabel: 'Extract class refactoring'.
-	
-	discardEdits := false.
 	
 	messageListModel := ClassAllMessageListModel withForm: self.
 	instanceVariableListModel := ClassAllInstanceVariableListModel withForm: self.! !
@@ -333,17 +345,22 @@ setExtents
 	formLayout morphExtent: requiredExtent.
 	scrollPane scroller morphExtent: requiredExtent.! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/19/2023 01:35:45'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/29/2023 15:31:30'!
 submitButtonClicked
 	
+	| request |
 	self halt.
-	"model userSubmitted: ExtractClassObjectRequest ."
+	request := ExtractClassObjectRequest 
+					newWithNameModel: newClassNameModel
+					methodsToMoveModel: messageListModel
+					instanceVariableListModel: instanceVariableListModel
+					variableNameToAccessThroughModel: variableNameToAccessNewClassModel .
+	model userSubmitted: request.
 	self deleteDiscardingEdits! !
 
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 10/18/2023 02:25:10'!
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 10/20/2023 01:40:49'!
 deleteDiscardingEdits
 
-	discardEdits := true.
 	super delete.! !
 
 !ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 10/10/2023 23:43:58'!
@@ -681,24 +698,59 @@ initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anI
 	variableToAccessToNewClass := anInstanceVariableNameForSourceClass.
 	! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/9/2023 19:48:45'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:34:05'!
+addInstanceVariableToAccessNewClass
+
+	^ sourceClass addInstVarName: variableToAccessToNewClass! !
+
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:36:19'!
 apply
-	| newSourceInitialize extraParameter |
-	Object 
+	
+	self 
+		createNewClass;
+		addInstanceVariableToAccessNewClass;
+		moveInstanceVariables;
+		moveMethods;
+		initializeNewObject.! !
+
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:27:56'!
+createNewClass
+
+	^ Object 
 		subclass: targetClassName 
 		instanceVariableNames: ''
 		classVariableNames: ''
 		poolDictionaries: ''
-		category: sourceClass category .
-	sourceClass addInstVarName: variableToAccessToNewClass.
-	instVarsToExtract do: [ :anInstanceVariableToMove | 
+		category: sourceClass category! !
+
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:32:15'!
+initializeNewObject
+	| newSourceInitialize |
+	sourceClass methodDict 
+		at: #initialize 
+		ifPresent:  [ :initializeCompiledMethod |
+			newSourceInitialize := self newSourceCodeForInitializeWhenExists: initializeCompiledMethod.
+			]
+		ifAbsent: [
+			newSourceInitialize := 'initialize', String newLineString, String tab, variableToAccessToNewClass, ' := ', targetClassName, ' new.'.
+			newSourceInitialize := newSourceInitialize, String newLineString, String tab, 'super initialize.'.
+			].
+	sourceClass compile: newSourceInitialize! !
+
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:36:18'!
+moveInstanceVariables
+
+	^ instVarsToExtract do: [ :anInstanceVariableToMove | 
 		(MoveInstanceVariableRefactoring 
 			named: anInstanceVariableToMove 
 			from: sourceClass 
 			to: (Smalltalk classNamed: targetClassName) 
-			accessingThrough: variableToAccessToNewClass ) apply.].
-	
-	methodsToExtract do: [ :aMethodToMove |
+			accessingThrough: variableToAccessToNewClass ) apply.]! !
+
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:30:05'!
+moveMethods
+
+	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
 		(MoveMethodRefactoring needParameterNameToMove: aMethodToMove from: sourceClass)
 			ifTrue: [
 				aMethodToMove isKeyword 
@@ -712,18 +764,7 @@ apply
 			from: sourceClass 
 			to: (Smalltalk classNamed: targetClassName)
 			accessingThrough: variableToAccessToNewClass
-			parameterNeeded: extraParameter) apply.].
-	
-	sourceClass methodDict 
-		at: #initialize 
-		ifPresent:  [ :initializeCompiledMethod |
-			newSourceInitialize := self newSourceCodeForInitializeWhenExists: initializeCompiledMethod.
-			]
-		ifAbsent: [
-			newSourceInitialize := 'initialize', String newLineString, String tab, variableToAccessToNewClass, ' := ', targetClassName, ' new.'.
-			newSourceInitialize := newSourceInitialize, String newLineString, String tab, 'super initialize.'.
-			].
-	sourceClass compile: newSourceInitialize! !
+			parameterNeeded: extraParameter) apply.]! !
 
 !ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/4/2023 00:20:37'!
 newSourceCodeForInitializeWhenExists: initializeCompiledMethod 
@@ -791,6 +832,17 @@ initializeToApplyOn: aClass
 cancel
 	form delete.! !
 
+!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 10/29/2023 15:33:44'!
+createRefactoring
+	self halt.
+	
+	^ExtractClassRefactoring 
+		from: classToRefactor 
+		to: extractClassRequest newClassName
+		instanceVariableNamed: extractClassRequest variableNameToAccessNewClass
+		instVarToExtract: extractClassRequest instanceVariablesToExtract
+		methodToExtract: extractClassRequest methodsToExtract.! !
+
 !ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 10/10/2023 23:05:01'!
 value
 	self requestRefactoringParametersHandlingRefactoringExceptions.! !
@@ -816,6 +868,14 @@ instanceVariableList
 !ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 10/18/2023 00:50:43'!
 selectorList
 	^classToRefactor selectors sort! !
+
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:59:44'!
+userSubmitted: request 
+	
+	extractClassRequest := request.
+	self createRefactoringHandlingRefactoringExceptions.
+	refactoring ifNotNil: [self applyRefactoring].
+	! !
 
 !ExtractClassApplier class methodsFor: 'instance creation' stamp: 'mc 10/10/2023 23:03:08'!
 applyOn: aClass 
@@ -848,6 +908,13 @@ listSelectionAt: anIndex
 listSelectionAt: anIndex put: aBoolean 
 	list at: anIndex put: aBoolean ! !
 
+!ClassAllInstanceVariableListModel methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:12:38'!
+instanceVariablesToExtract
+	| retval |
+	retval := OrderedCollection new.
+	self instanceVariableList with: list do: [ :str :sel | sel ifTrue: [ retval add: str ]].
+	^retval! !
+
 !ClassAllInstanceVariableListModel class methodsFor: 'instance creation' stamp: 'mc 10/18/2023 00:58:54'!
 withForm: anExtractClassForm 
 	^self new initializeWithForm: anExtractClassForm ! !
@@ -878,10 +945,59 @@ selectedSuite
 selectedSuite: anInteger
 	index := anInteger ! !
 
+!ClassAllMessageListModel methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:17:31'!
+methodsToExtract
+	| retval |
+	retval := OrderedCollection new.
+	self messageList with: list do: [ :str :sel | sel ifTrue: [ retval add: str ]].
+	^retval! !
+
 !ClassAllMessageListModel class methodsFor: 'instance creation' stamp: 'mc 10/16/2023 03:27:03'!
 withForm: anExtractClassForm
 
 	^self new initializeWithForm: anExtractClassForm ! !
+
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/23/2023 01:43:09'!
+instanceVariablesToExtract
+
+	^instanceVariableListModel instanceVariablesToExtract! !
+
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:16:17'!
+methodsToExtract
+	^messageListModel methodsToExtract! !
+
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/23/2023 01:32:22'!
+newClassName
+	^newClassNameModel actualContents asString asSymbol ! !
+
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/29/2023 15:34:38'!
+variableNameToAccessNewClass
+	^variableNameToAccessNewClassModel actualContents string ! !
+
+!ExtractClassObjectRequest methodsFor: 'initialization' stamp: 'mc 10/22/2023 00:17:13'!
+initializeNewWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel 
+	newClassNameModel := aNewClassNameModel.
+	messageListModel := aMessageListModel.
+	instanceVariableListModel := anInstanceVariableListModel.! !
+
+!ExtractClassObjectRequest methodsFor: 'initialization' stamp: 'mc 10/29/2023 15:32:35'!
+initializeNewWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel 
+	newClassNameModel := aNewClassNameModel.
+	messageListModel := aMessageListModel.
+	instanceVariableListModel := anInstanceVariableListModel.
+	variableNameToAccessNewClassModel := aVariableNameToAccessNewClassModel.! !
+
+!ExtractClassObjectRequest class methodsFor: 'instance creation' stamp: 'mc 10/22/2023 00:16:48'!
+newWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel 
+	^self new initializeNewWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel ! !
+
+!ExtractClassObjectRequest class methodsFor: 'instance creation' stamp: 'mc 10/29/2023 15:32:12'!
+newWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel 
+	^self new 
+		initializeNewWithNameModel: aNewClassNameModel 
+		methodsToMoveModel: aMessageListModel 
+		instanceVariableListModel: anInstanceVariableListModel 
+		variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel ! !
 
 !TesisExtractClassRefactoringMenu class methodsFor: 'as yet unclassified' stamp: 'mc 10/10/2023 01:16:47'!
 classListMenuOptions
