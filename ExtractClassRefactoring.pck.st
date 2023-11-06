@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 29 October 2023 at 3:37:41 pm'!
+'From Cuis 6.0 [latest update: #5981] on 5 November 2023 at 11:44:12 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 5!
+!provides: 'ExtractClassRefactoring' 1 6!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -206,14 +206,14 @@ buildMorphicWindow
 	
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/26/2023 22:47:08'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/5/2023 19:33:07'!
 buildNullObjectHierarchyClassesSection
 
 	| section maxLabelWidth nullClassInput variableNameInput |
 
 	section := FormSection withTitle: 'Extract class title' withColor: self backgroundColor.
 
-self halt.
+"self halt."
 	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
 	newClassNameModel := TextModel withText: 'NameOfNewClass'.
 	nullClassInput := LabeledInput 
@@ -345,11 +345,11 @@ setExtents
 	formLayout morphExtent: requiredExtent.
 	scrollPane scroller morphExtent: requiredExtent.! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/29/2023 15:31:30'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/5/2023 19:33:48'!
 submitButtonClicked
 	
 	| request |
-	self halt.
+	"self halt."
 	request := ExtractClassObjectRequest 
 					newWithNameModel: newClassNameModel
 					methodsToMoveModel: messageListModel
@@ -747,9 +747,9 @@ moveInstanceVariables
 			to: (Smalltalk classNamed: targetClassName) 
 			accessingThrough: variableToAccessToNewClass ) apply.]! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:30:05'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/5/2023 22:11:06'!
 moveMethods
-
+	self halt.
 	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
 		(MoveMethodRefactoring needParameterNameToMove: aMethodToMove from: sourceClass)
 			ifTrue: [
@@ -832,9 +832,9 @@ initializeToApplyOn: aClass
 cancel
 	form delete.! !
 
-!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 10/29/2023 15:33:44'!
+!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 11/5/2023 19:33:56'!
 createRefactoring
-	self halt.
+	"self halt."
 	
 	^ExtractClassRefactoring 
 		from: classToRefactor 
