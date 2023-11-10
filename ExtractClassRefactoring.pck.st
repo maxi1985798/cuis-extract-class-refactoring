@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 5 November 2023 at 11:44:12 pm'!
+'From Cuis 6.0 [latest update: #5981] on 9 November 2023 at 11:07:22 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 6!
+!provides: 'ExtractClassRefactoring' 1 7!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -565,10 +565,10 @@ test100_2extractClassShouldReuseInitialize
 	tmpvar := 1.
 	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 00:21:52'!
 test101GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
-	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring |
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
 	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
 	instVarsToExtract := OrderedCollection new.
@@ -578,18 +578,20 @@ test101GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariabl
 	refactoring := ExtractClassRefactoring 
 						from: sourceClass
 						to: targetClassName
-						instanceVariableNamed: 'aTargetClass' instVarToExtract: instVarsToExtract
+						instanceVariableNamed: 'aTargetClass' 
+						instVarToExtract: instVarsToExtract
 						methodToExtract: methodsToExtract.
 	refactoring apply.
 	
-	self assert: [ (Smalltalk classNamed: #TargetClass) notNil ].
-	self assert: 1 equals: (Smalltalk classNamed: #TargetClass) instVarNames size.
-	self assert: 'iv1' equals: (Smalltalk classNamed: #TargetClass) instVarNames first.! !
+	targetClass := Smalltalk classNamed: #TargetClass.
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'iv1' equals: targetClass instVarNames first.! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 00:21:56'!
 test102GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
-	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring |
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
 	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1 iv2'.
 	instVarsToExtract := OrderedCollection new.
@@ -600,19 +602,21 @@ test102GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariabl
 	refactoring := ExtractClassRefactoring 
 						from: sourceClass
 						to: targetClassName
-						instanceVariableNamed: 'aTargetClass' instVarToExtract: instVarsToExtract
+						instanceVariableNamed: 'aTargetClass' 
+						instVarToExtract: instVarsToExtract
 						methodToExtract: methodsToExtract.
 	refactoring apply.
 	
-	self assert: [ (Smalltalk classNamed: #TargetClass) notNil ].
-	self assert: 2 equals: (Smalltalk classNamed: #TargetClass) instVarNames size.
-	self assert: (Smalltalk classNamed: #TargetClass) instVarNames includes: 'iv1'.
-	self assert: (Smalltalk classNamed: #TargetClass) instVarNames includes: 'iv2'.! !
+	targetClass := Smalltalk classNamed: #TargetClass.
+	self assert: [ targetClass notNil ].
+	self assert: 2 equals: targetClass instVarNames size.
+	self assert: targetClass instVarNames includes: 'iv1'.
+	self assert: targetClass instVarNames includes: 'iv2'.! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/4/2023 23:00:22'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 00:22:01'!
 test103GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
-	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring |
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
 	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
 	instVarsToExtract := OrderedCollection new.
@@ -623,16 +627,18 @@ test103GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldB
 	refactoring := ExtractClassRefactoring 
 						from: sourceClass
 						to: targetClassName
-						instanceVariableNamed: 'aTargetClass' instVarToExtract: instVarsToExtract
+						instanceVariableNamed: 'aTargetClass' 
+						instVarToExtract: instVarsToExtract
 						methodToExtract: methodsToExtract.
 	refactoring apply.
 	
-	self assert: [ (Smalltalk classNamed: #TargetClass) notNil ].
-	self assert: 1 equals: (Smalltalk classNamed: #TargetClass) instVarNames size.
-	self assert: (Smalltalk classNamed: #TargetClass) instVarNames includes: 'iv1'.
+	targetClass := Smalltalk classNamed: #TargetClass.
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: targetClass instVarNames includes: 'iv1'.
 	self assert: 'm1 ^aTargetClass iv1+1.' equals: (sourceClass sourceCodeAt: #m1).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/9/2023 09:17:29'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 01:48:50'!
 test104GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -647,18 +653,19 @@ test104GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	refactoring := ExtractClassRefactoring 
 						from: sourceClass
 						to: targetClassName
-						instanceVariableNamed: 'aTargetClass' instVarToExtract: instVarsToExtract
+						instanceVariableNamed: 'aTargetClass' 
+						instVarToExtract: instVarsToExtract
 						methodToExtract: methodsToExtract.
 	refactoring apply.
 	
-	targetClass := (Smalltalk classNamed: #TargetClass).
+	targetClass := Smalltalk classNamed: #TargetClass.
 	self assert: [ targetClass notNil ].
 	self assert: 0 equals: targetClass instVarNames size.
 	self assert: 'm1
 	^aTargetClass m1: self.' equals: (sourceClass sourceCodeAt: #m1).
-	self assert: 'm1: aSourceObject ^aSourceObject iv1+1.' equals: (targetClass sourceCodeAt: #m1:).! !
+	self assert: 'm1: aSourceClass ^aSourceClass iv1+1.' equals: (targetClass sourceCodeAt: #m1:).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/9/2023 19:49:11'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 01:49:12'!
 test105Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -675,7 +682,8 @@ test105Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	refactoring := ExtractClassRefactoring 
 						from: sourceClass
 						to: targetClassName
-						instanceVariableNamed: 'aTargetClass' instVarToExtract: instVarsToExtract
+						instanceVariableNamed: 'aTargetClass' 
+						instVarToExtract: instVarsToExtract
 						methodToExtract: methodsToExtract.
 	refactoring apply.
 	
@@ -684,7 +692,7 @@ test105Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	self assert: 0 equals: targetClass instVarNames size.
 	self assert: 'm1
 	^aTargetClass m1: self.' equals: (sourceClass sourceCodeAt: #m1).
-	self assert: 'm1: aSourceObject ^aSourceObject iv1+1.' equals: (targetClass sourceCodeAt: #m1:).
+	self assert: 'm1: aSourceClass ^aSourceClass iv1+1.' equals: (targetClass sourceCodeAt: #m1:).
 	self assert: 'm2
 	^aTargetClass m2.' equals: (sourceClass sourceCodeAt: #m2).
 	self assert: 'm2 ^1.' equals: (targetClass sourceCodeAt: #m2).! !
@@ -747,15 +755,15 @@ moveInstanceVariables
 			to: (Smalltalk classNamed: targetClassName) 
 			accessingThrough: variableToAccessToNewClass ) apply.]! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/5/2023 22:11:06'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/9/2023 01:48:25'!
 moveMethods
-	self halt.
+	"self halt."
 	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
 		(MoveMethodRefactoring needParameterNameToMove: aMethodToMove from: sourceClass)
 			ifTrue: [
 				aMethodToMove isKeyword 
-					ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: 'aSourceObject' extraKeyword: 'withSource' ]
-					ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: 'aSourceObject'.]]
+					ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: ('a', sourceClass name) extraKeyword: ('with', sourceClass name) ]
+					ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: ('a', sourceClass name).]]
 			ifFalse: [extraParameter := NonExtraParameterNameNeeded new].
 		
 		
