@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 13 November 2023 at 10:40:06 pm'!
+'From Cuis 6.0 [latest update: #5981] on 28 November 2023 at 4:44:21 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 8!
+!provides: 'ExtractClassRefactoring' 1 9!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -144,19 +144,9 @@ buildCancelButton
 
 	^button! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/20/2023 01:43:38'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/14/2023 23:03:29'!
 buildMethodsToMoveListSection
 	| list |
-"
-	list := PluggableListMorph
-		model: messageListModel
-		listGetter: #messageList
-		indexGetter: #messageListIndex
-		indexSetter: #messageListIndex:
-		mainView: self
-		menuGetter: #messageListMenu
-		keystrokeAction: #messageListKey:from:.
-"
 
 	list := PluggableListMorphOfMany
 				model: messageListModel
@@ -174,9 +164,9 @@ buildMethodsToMoveListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/20/2023 01:43:38'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 23:03:54'!
 buildMorphicWindow
-	
+	"self halt."
 	self initializeScrollableContainer.
 	self initializeFormLayout.
 	scrollPane scroller addMorph: formLayout.
@@ -186,15 +176,12 @@ buildMorphicWindow
 	formLayout addMorph: newClassNameSection.
 
 	instanceVariableListSection := self buildinstanceVariableListSection.
+	formLayout addMorph: (LabelMorph contents: 'Select instance variables to move:').
 	formLayout addMorph: instanceVariableListSection.
 
 	messageSendingListSection := self buildMethodsToMoveListSection.
+	formLayout addMorph: (LabelMorph contents: 'Select methods to move:').
 	formLayout addMorph: messageSendingListSection.
-	
-
-"
-	self buildIfNilChecksFormsFor: ifNilChecks.
-"
 
 	actionButtonsSection := self buildActionButtonsSection.
 	formLayout addMorph: actionButtonsSection.
@@ -206,12 +193,14 @@ buildMorphicWindow
 	
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/5/2023 19:33:07'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 02:25:45'!
 buildNullObjectHierarchyClassesSection
 
 	| section maxLabelWidth nullClassInput variableNameInput |
 
-	section := FormSection withTitle: 'Extract class title' withColor: self backgroundColor.
+	section := FormSection 
+				withTitle: 'Extract class for ', model classToRefactorName 
+				withColor: self backgroundColor.
 
 "self halt."
 	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
@@ -252,7 +241,7 @@ buildSubmitButton
 
 	^submitButton! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/19/2023 01:21:31'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 02:29:47'!
 buildinstanceVariableListSection
 	| list |
 "
@@ -279,8 +268,19 @@ buildinstanceVariableListSection
 	
 	list color: Color white.
 	list layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: IntroduceNullObjectForm fontProportionalUnitOfReferenceForHeight * 7).
-
+	"
+	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
+	nullClassInput := LabeledInput 
+					withLabel: 'Instance variables:'
+					withWidth: maxLabelWidth
+					withModel: list
+					usingAs: self.
+"
 	^list! !
+
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 00:08:18'!
+canDiscardEdits
+	^true! !
 
 !ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/10/2023 23:54:56'!
 initializeFormLayout
@@ -297,12 +297,12 @@ initializeScrollableContainer
 	scrollPane color: self backgroundColor.
 	self layoutMorph addMorphUseAll: scrollPane.! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/20/2023 01:40:56'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/15/2023 01:49:28'!
 initializeWithModel: aModel 
 
 	super model: aModel.
 	
-	self setLabel: 'Extract class refactoring'.
+	self setLabel: 'Extract class refactoring for ', aModel classToRefactorName .
 	
 	messageListModel := ClassAllMessageListModel withForm: self.
 	instanceVariableListModel := ClassAllInstanceVariableListModel withForm: self.! !
@@ -811,7 +811,7 @@ initializeNewObject
 			].
 	sourceClass compile: newSourceInitialize! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/13/2023 22:38:24'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/16/2023 23:04:08'!
 moveInstanceVariables
 
 	| newGetter newSetter |
@@ -948,6 +948,10 @@ requestRefactoringParameters
 	ifNilChecks ifEmpty: [^self inform: ('There are no ifNil checks on ', instanceVariable)].
 "
 	form := ExtractClassForm open: self.! !
+
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 11/15/2023 01:49:03'!
+classToRefactorName
+	^classToRefactor name! !
 
 !ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 10/18/2023 01:04:18'!
 instanceVariableList
