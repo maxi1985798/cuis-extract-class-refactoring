@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 28 November 2023 at 4:44:21 pm'!
+'From Cuis 6.0 [latest update: #5981] on 29 November 2023 at 1:32:30 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 9!
+!provides: 'ExtractClassRefactoring' 1 10!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -164,14 +164,23 @@ buildMethodsToMoveListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 23:03:54'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/29/2023 01:45:35'!
 buildMorphicWindow
-	"self halt."
-	self initializeScrollableContainer.
-	self initializeFormLayout.
-	scrollPane scroller addMorph: formLayout.
+	
+	scrollPane := ColoredScrollPane initializedInstance.
+	scrollPane scroller color: self backgroundColor.
+	scrollPane scroller layoutSpec: LayoutSpec useAll.
+	scrollPane color: self backgroundColor.
+	"self layoutMorph addMorphUseAll: scrollPane."
+	
+	formLayout := LayoutMorph newColumn.
+	formLayout separation: 10; color: self backgroundColor.
+	
+	"scrollPane scroller addMorph: formLayout."
+	self layoutMorph color: self backgroundColor.
+	self layoutMorph addMorphUseAll: formLayout.
 	formLayout axisEdgeWeight: #columnTop.
-
+	self halt.
 	newClassNameSection := self buildNullObjectHierarchyClassesSection.
 	formLayout addMorph: newClassNameSection.
 
@@ -282,21 +291,6 @@ buildinstanceVariableListSection
 canDiscardEdits
 	^true! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/10/2023 23:54:56'!
-initializeFormLayout
-
-	formLayout := LayoutMorph newColumn.
-	formLayout separation: 10; color: self backgroundColor.! !
-
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/10/2023 23:51:34'!
-initializeScrollableContainer
-
-	scrollPane := ColoredScrollPane initializedInstance.
-	scrollPane scroller color: self backgroundColor.
-	scrollPane scroller layoutSpec: LayoutSpec useAll.
-	scrollPane color: self backgroundColor.
-	self layoutMorph addMorphUseAll: scrollPane.! !
-
 !ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/15/2023 01:49:28'!
 initializeWithModel: aModel 
 
@@ -358,16 +352,24 @@ submitButtonClicked
 	model userSubmitted: request.
 	self deleteDiscardingEdits! !
 
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/29/2023 01:53:31'!
+windowColor
+	^Color lightGray! !
+
 !ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 10/20/2023 01:40:49'!
 deleteDiscardingEdits
 
 	super delete.! !
 
-!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 10/10/2023 23:43:58'!
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 11/29/2023 08:34:15'!
+widgetsColor: aColor
+	! !
+
+!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 11/29/2023 01:40:16'!
 open: aModel label: aString
 
 	|  window |
-
+	"self halt."
 	window := self withModel: aModel.
 	window buildMorphicWindow.
 	aString ifNotNil: [ window setLabel: aString ].
