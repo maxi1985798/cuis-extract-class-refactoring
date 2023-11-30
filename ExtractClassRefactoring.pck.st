@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 29 November 2023 at 1:32:30 pm'!
+'From Cuis 6.0 [latest update: #5981] on 30 November 2023 at 6:40:00 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 10!
+!provides: 'ExtractClassRefactoring' 1 11!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -164,7 +164,7 @@ buildMethodsToMoveListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/29/2023 01:45:35'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/29/2023 19:37:11'!
 buildMorphicWindow
 	
 	scrollPane := ColoredScrollPane initializedInstance.
@@ -180,9 +180,9 @@ buildMorphicWindow
 	self layoutMorph color: self backgroundColor.
 	self layoutMorph addMorphUseAll: formLayout.
 	formLayout axisEdgeWeight: #columnTop.
-	self halt.
+	"self halt."
 	newClassNameSection := self buildNullObjectHierarchyClassesSection.
-	formLayout addMorph: newClassNameSection.
+	"formLayout addMorph: newClassNameSection."
 
 	instanceVariableListSection := self buildinstanceVariableListSection.
 	formLayout addMorph: (LabelMorph contents: 'Select instance variables to move:').
@@ -202,10 +202,10 @@ buildMorphicWindow
 	
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 02:25:45'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/30/2023 18:39:20'!
 buildNullObjectHierarchyClassesSection
 
-	| section maxLabelWidth nullClassInput variableNameInput |
+	| section maxLabelWidth newClassNameInput variableNameInput |
 
 	section := FormSection 
 				withTitle: 'Extract class for ', model classToRefactorName 
@@ -214,23 +214,27 @@ buildNullObjectHierarchyClassesSection
 "self halt."
 	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
 	newClassNameModel := TextModel withText: 'NameOfNewClass'.
-	nullClassInput := LabeledInput 
+	newClassNameInput := LabeledInput 
 					withLabel: 'New class name'
 					withWidth: maxLabelWidth
 					withModel: newClassNameModel
 					usingAs: self.
 
-	variableNameToAccessNewClassModel := TextModel withText: 'NameOfVariable'.
+	variableNameToAccessNewClassModel := TextModel withText: 'aNameOfVariable'.
 	variableNameInput := LabeledInput 
-					withLabel: 'variable name to access new class'
+					withLabel: 'Variable name to access new class'
 					withWidth: maxLabelWidth
 					withModel: variableNameToAccessNewClassModel
 					usingAs: self.
-
-	section addMorph: nullClassInput.
+	
+	formLayout addMorph: newClassNameInput.
+	formLayout addMorph: variableNameInput.
+	
+	"
+	section addMorph: newClassNameInput.
 	section addMorph: variableNameInput.
 	section layoutSpec: (self layoutSpecForSection: section).
-
+	"
 	^section
 ! !
 
@@ -779,15 +783,16 @@ addInstanceVariableToAccessNewClass
 
 	^ sourceClass addInstVarName: variableToAccessToNewClass! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:36:19'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/29/2023 18:28:03'!
 apply
 	
 	self 
 		createNewClass;
+		initializeNewObject;
 		addInstanceVariableToAccessNewClass;
 		moveInstanceVariables;
-		moveMethods;
-		initializeNewObject.! !
+		moveMethods.
+		! !
 
 !ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:27:56'!
 createNewClass
