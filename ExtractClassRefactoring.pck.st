@@ -1,4 +1,4 @@
-'From Cuis 6.0 [latest update: #5981] on 30 November 2023 at 6:40:00 pm'!
+'From Cuis 6.0 [latest update: #5981] on 21 December 2023 at 5:53:41 pm'!
 'Description '!
 !provides: 'ExtractClassRefactoring' 1 11!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
@@ -16,7 +16,7 @@ CodeExtractorWithoutTemporariesVisitor class
 
 !classDefinition: #ExtractClassForm category: 'ExtractClassRefactoring'!
 SystemWindow subclass: #ExtractClassForm
-	instanceVariableNames: 'scrollPane formLayout newClassNameSection messageSendingListSection actionButtonsSection messageListModel introduceNullObjectRequest instanceVariableListSection instanceVariableListModel newClassNameModel variableNameToAccessNewClassModel'
+	instanceVariableNames: 'newClassNameSection messageSendingListSection actionButtonsSection messageListModel instanceVariableListSection instanceVariableListModel newClassNameModel variableNameToAccessNewClassModel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -144,10 +144,10 @@ buildCancelButton
 
 	^button! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/14/2023 23:03:29'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/18/2023 18:18:09'!
 buildMethodsToMoveListSection
 	| list |
-
+	"self halt."
 	list := PluggableListMorphOfMany
 				model: messageListModel
 				listGetter: #messageList
@@ -164,37 +164,45 @@ buildMethodsToMoveListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/29/2023 19:37:11'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/20/2023 16:03:39'!
 buildMorphicWindow
-	
+	|row xsList|
+	"
 	scrollPane := ColoredScrollPane initializedInstance.
 	scrollPane scroller color: self backgroundColor.
 	scrollPane scroller layoutSpec: LayoutSpec useAll.
 	scrollPane color: self backgroundColor.
+	"
 	"self layoutMorph addMorphUseAll: scrollPane."
 	
-	formLayout := LayoutMorph newColumn.
-	formLayout separation: 10; color: self backgroundColor.
+	"formLayout := LayoutMorph newColumn."
+	self layoutMorph separation: 10; color: self backgroundColor.
 	
 	"scrollPane scroller addMorph: formLayout."
 	self layoutMorph color: self backgroundColor.
-	self layoutMorph addMorphUseAll: formLayout.
-	formLayout axisEdgeWeight: #columnTop.
+	"self layoutMorph addMorphUseAll: formLayout."
+	self layoutMorph axisEdgeWeight: #columnTop.
 	"self halt."
 	newClassNameSection := self buildNullObjectHierarchyClassesSection.
 	"formLayout addMorph: newClassNameSection."
 
 	instanceVariableListSection := self buildinstanceVariableListSection.
-	formLayout addMorph: (LabelMorph contents: 'Select instance variables to move:').
-	formLayout addMorph: instanceVariableListSection.
+	self layoutMorph addMorph: (LabelMorph contents: 'Select instance variables to move:').
+	self layoutMorph addMorph: instanceVariableListSection.
 
+	self layoutMorph addMorph: (LabelMorph contents: 'Select methods to move:').
+	self halt.
+	xsList := InnerListMorph new.
+	"xsList model: messageListModel."
 	messageSendingListSection := self buildMethodsToMoveListSection.
-	formLayout addMorph: (LabelMorph contents: 'Select methods to move:').
-	formLayout addMorph: messageSendingListSection.
+	messageSendingListSection addMorph: xsList.
+	row := LayoutMorph newRow.
+	row doAdoptWidgetsColor.
+	row addMorphs: (Array with: messageSendingListSection).
+	self layoutMorph addMorph: row.
 
 	actionButtonsSection := self buildActionButtonsSection.
-	formLayout addMorph: actionButtonsSection.
-
+	self layoutMorph addMorph: actionButtonsSection.
 
 	self setExtents.
 
@@ -202,7 +210,7 @@ buildMorphicWindow
 	
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/30/2023 18:39:20'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/18/2023 18:22:11'!
 buildNullObjectHierarchyClassesSection
 
 	| section maxLabelWidth newClassNameInput variableNameInput |
@@ -212,7 +220,7 @@ buildNullObjectHierarchyClassesSection
 				withColor: self backgroundColor.
 
 "self halt."
-	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
+	maxLabelWidth := self recommendedWidthForLabels: #('New class name' 'Variable name to access new class').
 	newClassNameModel := TextModel withText: 'NameOfNewClass'.
 	newClassNameInput := LabeledInput 
 					withLabel: 'New class name'
@@ -227,8 +235,8 @@ buildNullObjectHierarchyClassesSection
 					withModel: variableNameToAccessNewClassModel
 					usingAs: self.
 	
-	formLayout addMorph: newClassNameInput.
-	formLayout addMorph: variableNameInput.
+	self layoutMorph addMorph: newClassNameInput.
+	self layoutMorph addMorph: variableNameInput.
 	
 	"
 	section addMorph: newClassNameInput.
@@ -254,7 +262,7 @@ buildSubmitButton
 
 	^submitButton! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 02:29:47'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/14/2023 12:45:37'!
 buildinstanceVariableListSection
 	| list |
 "
@@ -281,6 +289,7 @@ buildinstanceVariableListSection
 	
 	list color: Color white.
 	list layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: IntroduceNullObjectForm fontProportionalUnitOfReferenceForHeight * 7).
+	
 	"
 	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
 	nullClassInput := LabeledInput 
@@ -336,12 +345,12 @@ instanceVariableList
 selectorList
 	^model selectorList! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/17/2023 01:47:33'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/18/2023 18:07:39'!
 setExtents
 	| requiredExtent |
 	requiredExtent := 636.7669122572003@834.6393034159412.
-	formLayout morphExtent: requiredExtent.
-	scrollPane scroller morphExtent: requiredExtent.! !
+	self layoutMorph morphExtent: requiredExtent.
+	"scrollPane scroller morphExtent: requiredExtent."! !
 
 !ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/5/2023 19:33:48'!
 submitButtonClicked
@@ -1018,11 +1027,12 @@ instanceVariablesToExtract
 withForm: anExtractClassForm 
 	^self new initializeWithForm: anExtractClassForm ! !
 
-!ClassAllMessageListModel methodsFor: 'initialization' stamp: 'mc 10/19/2023 00:43:54'!
+!ClassAllMessageListModel methodsFor: 'initialization' stamp: 'mc 12/20/2023 16:10:29'!
 initializeWithForm: anExtractClassForm 
+	"self halt."
 	index := 0.
 	extractClassForm := anExtractClassForm.
-	list := self messageList collect: [:ea | false].! !
+	list := extractClassForm selectorList collect: [:ea | false].! !
 
 !ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 00:42:09'!
 listSelectionAt: anIndex
@@ -1032,9 +1042,13 @@ listSelectionAt: anIndex
 listSelectionAt: anIndex put: aBoolean 
 	list at: anIndex put: aBoolean ! !
 
-!ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 10/18/2023 00:41:24'!
+!ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 12/20/2023 16:16:06'!
 messageList
-	^extractClassForm selectorList! !
+	| retval |
+	self halt.
+	retval := OrderedCollection new.
+	extractClassForm selectorList with: list do: [ :str :sel | sel ifTrue: [retval add: 'x ', str] ifFalse: [retval add: 'x ',str]].
+	^retval! !
 
 !ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 00:41:30'!
 selectedSuite
