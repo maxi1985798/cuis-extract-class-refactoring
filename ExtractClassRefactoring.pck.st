@@ -1,22 +1,12 @@
-'From Cuis 6.0 [latest update: #5981] on 21 December 2023 at 5:53:41 pm'!
+'From Cuis 6.0 [latest update: #5981] on 29 December 2023 at 9:17:13 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 11!
+!provides: 'ExtractClassRefactoring' 1 12!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
-!classDefinition: #CodeExtractorWithoutTemporariesVisitor category: 'ExtractClassRefactoring'!
-ParseNodeVisitor subclass: #CodeExtractorWithoutTemporariesVisitor
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ExtractClassRefactoring'!
-!classDefinition: 'CodeExtractorWithoutTemporariesVisitor class' category: 'ExtractClassRefactoring'!
-CodeExtractorWithoutTemporariesVisitor class
-	instanceVariableNames: ''!
-
 !classDefinition: #ExtractClassForm category: 'ExtractClassRefactoring'!
 SystemWindow subclass: #ExtractClassForm
-	instanceVariableNames: 'newClassNameSection messageSendingListSection actionButtonsSection messageListModel instanceVariableListSection instanceVariableListModel newClassNameModel variableNameToAccessNewClassModel'
+	instanceVariableNames: 'newClassNameSection messageSendingListSection actionButtonsSection messageListModel instanceVariableListSection instanceVariableListModel newClassNameModel variableNameToAccessNewClassModel indexVariableList variableList messageList indexMessageList'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -54,26 +44,6 @@ RefactoringApplier subclass: #ExtractClassApplier
 ExtractClassApplier class
 	instanceVariableNames: ''!
 
-!classDefinition: #ClassAllInstanceVariableListModel category: 'ExtractClassRefactoring'!
-Object subclass: #ClassAllInstanceVariableListModel
-	instanceVariableNames: 'extractClassForm index list'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ExtractClassRefactoring'!
-!classDefinition: 'ClassAllInstanceVariableListModel class' category: 'ExtractClassRefactoring'!
-ClassAllInstanceVariableListModel class
-	instanceVariableNames: ''!
-
-!classDefinition: #ClassAllMessageListModel category: 'ExtractClassRefactoring'!
-Object subclass: #ClassAllMessageListModel
-	instanceVariableNames: 'extractClassForm index list'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ExtractClassRefactoring'!
-!classDefinition: 'ClassAllMessageListModel class' category: 'ExtractClassRefactoring'!
-ClassAllMessageListModel class
-	instanceVariableNames: ''!
-
 !classDefinition: #ExtractClassObjectRequest category: 'ExtractClassRefactoring'!
 Object subclass: #ExtractClassObjectRequest
 	instanceVariableNames: 'newClassNameModel methodsToMoveModel instanceVariblesToMoveModel messageListModel instanceVariableListModel variableNameToAccessNewClassModel'
@@ -95,17 +65,137 @@ TesisExtractClassRefactoringMenu class
 	instanceVariableNames: ''!
 
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/17/2023 00:49:56'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/27/2023 16:35:03'!
+initializeWithModel: aModel 
+
+	super model: aModel.
+	
+	self setLabel: 'Extract class refactoring for ', aModel classToRefactorName .
+	
+	
+	
+	
+	indexVariableList := 0.
+	indexMessageList := 0.
+	variableList := self instanceVariableList collect: [:ea | false].
+	messageList := self selectorList collect: [:ea | false].
+	
+	
+	
+	"messageListModel := ClassAllMessageListModel withForm: self."
+	"instanceVariableListModel := ClassAllInstanceVariableListModel withForm: self."! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/16/2023 00:08:18'!
+canDiscardEdits
+	^true! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/17/2023 23:27:40'!
+cancelButtonClicked
+	
+	model cancel.! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:31:05'!
+indexVariableList
+	^indexVariableList! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:31:20'!
+indexVariableList: anIndex
+	indexVariableList := anIndex! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:28:56'!
+instanceVariableList
+	^model instanceVariableList sort! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 11:34:07'!
+instanceVariableListIndex
+	^indexVariableList ! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 11:34:38'!
+instanceVariableListIndex: anIndex 
+	indexVariableList := anIndex ! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:34:00'!
+instanceVariablesToExtract
+	| retval |
+	retval := OrderedCollection new.
+	self instanceVariableList with: variableList do: [ :str :sel | sel ifTrue: [ retval add: str ]].
+	^retval! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:32'!
+messageList
+	"self halt."
+	^self selectorList! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:52'!
+messagelistSelectionAt: anIndex
+	^messageList at: anIndex ! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:57'!
+messagelistSelectionAt: anIndex put: aBoolean 
+	messageList at: anIndex put: aBoolean ! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:43'!
+methodsToExtract
+	| retval |
+	retval := OrderedCollection new.
+	self messageList with: messageList do: [ :str :sel | sel ifTrue: [ retval add: str ]].
+	^retval! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:31:51'!
+selectedSuite
+	^indexMessageList! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:31:41'!
+selectedSuite: anInteger
+	indexMessageList := anInteger ! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/18/2023 00:42:31'!
+selectorList
+	^model selectorList! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/18/2023 18:07:39'!
+setExtents
+	| requiredExtent |
+	requiredExtent := 636.7669122572003@834.6393034159412.
+	self layoutMorph morphExtent: requiredExtent.
+	"scrollPane scroller morphExtent: requiredExtent."! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:38:12'!
+submitButtonClicked
+	
+	| request |
+	"self halt."
+	request := ExtractClassObjectRequest 
+					newWithNameModel: newClassNameModel
+					methodsToMoveModel: self
+					instanceVariableListModel: self
+					variableNameToAccessThroughModel: variableNameToAccessNewClassModel .
+	model userSubmitted: request.
+	self deleteDiscardingEdits! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:34:26'!
+variablelistSelectionAt: anIndex
+	^variableList at: anIndex ! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:34:45'!
+variablelistSelectionAt: anIndex put: aBoolean 
+	variableList at: anIndex put: aBoolean ! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/29/2023 01:53:31'!
+windowColor
+	^Color lightGray! !
+
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/17/2023 00:49:56'!
 addFocusReceiver: anInnerTextMorph
 
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/10/2023 23:52:49'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/10/2023 23:52:49'!
 backgroundColor
 
 	^Color lightGray! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/12/2023 01:02:26'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 01:02:26'!
 buildActionButtonsSection
 
 	| section sectionLayoutSpec submorphsWidth sectionWidth submorphsHeight |
@@ -128,7 +218,7 @@ buildActionButtonsSection
 	^section.
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/12/2023 01:02:54'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 01:02:54'!
 buildCancelButton
 
 	| button buttonLayoutSpec |
@@ -144,17 +234,17 @@ buildCancelButton
 
 	^button! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/18/2023 18:18:09'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/27/2023 16:32:39'!
 buildMethodsToMoveListSection
 	| list |
 	"self halt."
 	list := PluggableListMorphOfMany
-				model: messageListModel
+				model: self
 				listGetter: #messageList
 				primarySelectionGetter: #selectedSuite
 				primarySelectionSetter: #selectedSuite:
-				listSelectionGetter: #listSelectionAt:
-				listSelectionSetter: #listSelectionAt:put:
+				listSelectionGetter: #messagelistSelectionAt:
+				listSelectionSetter: #messagelistSelectionAt:put:
 				mainView: self
 				menuGetter: #messageListMenu
 				keystrokeAction: #messageListKey:from:.
@@ -164,9 +254,9 @@ buildMethodsToMoveListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/20/2023 16:03:39'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/28/2023 17:44:10'!
 buildMorphicWindow
-	|row xsList|
+	|row instanceVariablesToMoveTitle methodsToMoveTitle |
 	"
 	scrollPane := ColoredScrollPane initializedInstance.
 	scrollPane scroller color: self backgroundColor.
@@ -176,7 +266,7 @@ buildMorphicWindow
 	"self layoutMorph addMorphUseAll: scrollPane."
 	
 	"formLayout := LayoutMorph newColumn."
-	self layoutMorph separation: 10; color: self backgroundColor.
+	self layoutMorph separation: 5; color: self backgroundColor.
 	
 	"scrollPane scroller addMorph: formLayout."
 	self layoutMorph color: self backgroundColor.
@@ -187,16 +277,20 @@ buildMorphicWindow
 	"formLayout addMorph: newClassNameSection."
 
 	instanceVariableListSection := self buildinstanceVariableListSection.
-	self layoutMorph addMorph: (LabelMorph contents: 'Select instance variables to move:').
+	instanceVariablesToMoveTitle := LabelMorph contents: 'Select instance variables to move:'.
+"	instanceVariablesToMoveTitle contents: 'Select instance variables to move:'."
+	instanceVariablesToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
+	self layoutMorph addMorph: instanceVariablesToMoveTitle.
 	self layoutMorph addMorph: instanceVariableListSection.
-
-	self layoutMorph addMorph: (LabelMorph contents: 'Select methods to move:').
-	self halt.
-	xsList := InnerListMorph new.
+	methodsToMoveTitle := LabelMorph contents: 'Select methods to move:'.
+	methodsToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
+	self layoutMorph addMorph: methodsToMoveTitle.
+	"self halt."
+	"xsList := InnerListMorph new."
 	"xsList model: messageListModel."
 	messageSendingListSection := self buildMethodsToMoveListSection.
-	messageSendingListSection addMorph: xsList.
-	row := LayoutMorph newRow.
+	"messageSendingListSection addMorph: xsList."
+	row := LayoutMorph new.
 	row doAdoptWidgetsColor.
 	row addMorphs: (Array with: messageSendingListSection).
 	self layoutMorph addMorph: row.
@@ -206,32 +300,28 @@ buildMorphicWindow
 
 	self setExtents.
 
-	self showFormForMessage: messageListModel selectedSuite.
+	self showFormForMessage: 'asd'.
 	
 	! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/18/2023 18:22:11'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/28/2023 17:46:17'!
 buildNullObjectHierarchyClassesSection
 
-	| section maxLabelWidth newClassNameInput variableNameInput |
-
-	section := FormSection 
-				withTitle: 'Extract class for ', model classToRefactorName 
-				withColor: self backgroundColor.
+	| maxLabelWidth newClassNameInput variableNameInput |
 
 "self halt."
 	maxLabelWidth := self recommendedWidthForLabels: #('New class name' 'Variable name to access new class').
 	newClassNameModel := TextModel withText: 'NameOfNewClass'.
 	newClassNameInput := LabeledInput 
 					withLabel: 'New class name'
-					withWidth: maxLabelWidth
+					withLabelFixedWidth: maxLabelWidth
 					withModel: newClassNameModel
 					usingAs: self.
 
 	variableNameToAccessNewClassModel := TextModel withText: 'aNameOfVariable'.
 	variableNameInput := LabeledInput 
 					withLabel: 'Variable name to access new class'
-					withWidth: maxLabelWidth
+					withLabelFixedWidth: maxLabelWidth
 					withModel: variableNameToAccessNewClassModel
 					usingAs: self.
 	
@@ -242,11 +332,11 @@ buildNullObjectHierarchyClassesSection
 	section addMorph: newClassNameInput.
 	section addMorph: variableNameInput.
 	section layoutSpec: (self layoutSpecForSection: section).
-	"
-	^section
+	
+	^section"
 ! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/12/2023 01:04:18'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 01:04:18'!
 buildSubmitButton
 
 	| submitButton submitButtonLayoutSpec |
@@ -262,27 +352,17 @@ buildSubmitButton
 
 	^submitButton! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/14/2023 12:45:37'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/26/2023 15:35:49'!
 buildinstanceVariableListSection
 	| list |
-"
-	list := PluggableListMorph
-		model: instanceVariableListModel
-		listGetter: #instanceVariableList
-		indexGetter: #instanceVariableListIndex
-		indexSetter: #instanceVariableListIndex:
-		mainView: self
-		menuGetter: #messageListMenu
-		keystrokeAction: #messageListKey:from:.
-"
-
+	
 	list := PluggableListMorphOfMany
-				model: instanceVariableListModel
+				model: self
 				listGetter: #instanceVariableList
 				primarySelectionGetter: #instanceVariableListIndex
 				primarySelectionSetter: #instanceVariableListIndex:
-				listSelectionGetter: #listSelectionAt:
-				listSelectionSetter: #listSelectionAt:put:
+				listSelectionGetter: #variablelistSelectionAt:
+				listSelectionSetter: #variablelistSelectionAt:put:
 				mainView: self
 				menuGetter: #messageListMenu
 				keystrokeAction: #messageListKey:from:.
@@ -300,26 +380,12 @@ buildinstanceVariableListSection
 "
 	^list! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/16/2023 00:08:18'!
-canDiscardEdits
-	^true! !
-
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 11/15/2023 01:49:28'!
-initializeWithModel: aModel 
-
-	super model: aModel.
-	
-	self setLabel: 'Extract class refactoring for ', aModel classToRefactorName .
-	
-	messageListModel := ClassAllMessageListModel withForm: self.
-	instanceVariableListModel := ClassAllInstanceVariableListModel withForm: self.! !
-
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/12/2023 00:28:15'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 00:28:15'!
 layoutSpecForSection: aSection
 
 	^LayoutSpec proportionalWidth: 1.0 fixedHeight: aSection recommendedHeight! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/11/2023 23:50:55'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/11/2023 23:50:55'!
 recommendedWidthForLabels: labels
 
 	| rightMargin |
@@ -327,47 +393,10 @@ recommendedWidthForLabels: labels
 	rightMargin := 20.
 	^(labels collect: [:aLabel | FontFamily defaultFamilyAndPointSize widthOfString: aLabel]) max + rightMargin! !
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 10/16/2023 02:11:18'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/16/2023 02:11:18'!
 showFormForMessage: anIndex
 	^self
 ! !
-
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/17/2023 23:27:40'!
-cancelButtonClicked
-	
-	model cancel.! !
-
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/18/2023 01:01:40'!
-instanceVariableList
-	^model instanceVariableList! !
-
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/18/2023 00:42:31'!
-selectorList
-	^model selectorList! !
-
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/18/2023 18:07:39'!
-setExtents
-	| requiredExtent |
-	requiredExtent := 636.7669122572003@834.6393034159412.
-	self layoutMorph morphExtent: requiredExtent.
-	"scrollPane scroller morphExtent: requiredExtent."! !
-
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/5/2023 19:33:48'!
-submitButtonClicked
-	
-	| request |
-	"self halt."
-	request := ExtractClassObjectRequest 
-					newWithNameModel: newClassNameModel
-					methodsToMoveModel: messageListModel
-					instanceVariableListModel: instanceVariableListModel
-					variableNameToAccessThroughModel: variableNameToAccessNewClassModel .
-	model userSubmitted: request.
-	self deleteDiscardingEdits! !
-
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/29/2023 01:53:31'!
-windowColor
-	^Color lightGray! !
 
 !ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 10/20/2023 01:40:49'!
 deleteDiscardingEdits
@@ -378,7 +407,7 @@ deleteDiscardingEdits
 widgetsColor: aColor
 	! !
 
-!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 11/29/2023 01:40:16'!
+!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 12/28/2023 17:37:35'!
 open: aModel label: aString
 
 	|  window |
@@ -990,86 +1019,6 @@ applyOn: aClass
 	
 	^self new initializeToApplyOn: aClass! !
 
-!ClassAllInstanceVariableListModel methodsFor: 'initialization' stamp: 'mc 10/19/2023 01:20:40'!
-initializeWithForm: anExtractClassForm 
-	index := 0.
-	extractClassForm := anExtractClassForm.
-	list := self instanceVariableList collect: [:ea | false].! !
-
-!ClassAllInstanceVariableListModel methodsFor: 'morphmany' stamp: 'mc 10/18/2023 01:04:28'!
-instanceVariableList
-	^extractClassForm instanceVariableList sort! !
-
-!ClassAllInstanceVariableListModel methodsFor: 'morphmany' stamp: 'mc 10/18/2023 01:04:53'!
-instanceVariableListIndex
-	^index ! !
-
-!ClassAllInstanceVariableListModel methodsFor: 'morphmany' stamp: 'mc 10/18/2023 01:06:18'!
-instanceVariableListIndex: anIndex 
-	index := anIndex ! !
-
-!ClassAllInstanceVariableListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 01:21:51'!
-listSelectionAt: anIndex
-	^list at: anIndex ! !
-
-!ClassAllInstanceVariableListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 01:22:01'!
-listSelectionAt: anIndex put: aBoolean 
-	list at: anIndex put: aBoolean ! !
-
-!ClassAllInstanceVariableListModel methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:12:38'!
-instanceVariablesToExtract
-	| retval |
-	retval := OrderedCollection new.
-	self instanceVariableList with: list do: [ :str :sel | sel ifTrue: [ retval add: str ]].
-	^retval! !
-
-!ClassAllInstanceVariableListModel class methodsFor: 'instance creation' stamp: 'mc 10/18/2023 00:58:54'!
-withForm: anExtractClassForm 
-	^self new initializeWithForm: anExtractClassForm ! !
-
-!ClassAllMessageListModel methodsFor: 'initialization' stamp: 'mc 12/20/2023 16:10:29'!
-initializeWithForm: anExtractClassForm 
-	"self halt."
-	index := 0.
-	extractClassForm := anExtractClassForm.
-	list := extractClassForm selectorList collect: [:ea | false].! !
-
-!ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 00:42:09'!
-listSelectionAt: anIndex
-	^list at: anIndex ! !
-
-!ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 01:10:15'!
-listSelectionAt: anIndex put: aBoolean 
-	list at: anIndex put: aBoolean ! !
-
-!ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 12/20/2023 16:16:06'!
-messageList
-	| retval |
-	self halt.
-	retval := OrderedCollection new.
-	extractClassForm selectorList with: list do: [ :str :sel | sel ifTrue: [retval add: 'x ', str] ifFalse: [retval add: 'x ',str]].
-	^retval! !
-
-!ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 00:41:30'!
-selectedSuite
-	^index! !
-
-!ClassAllMessageListModel methodsFor: 'morphmany' stamp: 'mc 10/19/2023 00:41:09'!
-selectedSuite: anInteger
-	index := anInteger ! !
-
-!ClassAllMessageListModel methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:17:31'!
-methodsToExtract
-	| retval |
-	retval := OrderedCollection new.
-	self messageList with: list do: [ :str :sel | sel ifTrue: [ retval add: str ]].
-	^retval! !
-
-!ClassAllMessageListModel class methodsFor: 'instance creation' stamp: 'mc 10/16/2023 03:27:03'!
-withForm: anExtractClassForm
-
-	^self new initializeWithForm: anExtractClassForm ! !
-
 !ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/23/2023 01:43:09'!
 instanceVariablesToExtract
 
@@ -1087,22 +1036,12 @@ newClassName
 variableNameToAccessNewClass
 	^variableNameToAccessNewClassModel actualContents string ! !
 
-!ExtractClassObjectRequest methodsFor: 'initialization' stamp: 'mc 10/22/2023 00:17:13'!
-initializeNewWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel 
-	newClassNameModel := aNewClassNameModel.
-	messageListModel := aMessageListModel.
-	instanceVariableListModel := anInstanceVariableListModel.! !
-
 !ExtractClassObjectRequest methodsFor: 'initialization' stamp: 'mc 10/29/2023 15:32:35'!
 initializeNewWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel 
 	newClassNameModel := aNewClassNameModel.
 	messageListModel := aMessageListModel.
 	instanceVariableListModel := anInstanceVariableListModel.
 	variableNameToAccessNewClassModel := aVariableNameToAccessNewClassModel.! !
-
-!ExtractClassObjectRequest class methodsFor: 'instance creation' stamp: 'mc 10/22/2023 00:16:48'!
-newWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel 
-	^self new initializeNewWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel ! !
 
 !ExtractClassObjectRequest class methodsFor: 'instance creation' stamp: 'mc 10/29/2023 15:32:12'!
 newWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel 
@@ -1125,6 +1064,40 @@ classListMenuOptions
 				#icon 			-> 		#newFolderIcon
 			} asDictionary.			
 	}`.! !
+
+!LabeledInput methodsFor: '*ExtractClassRefactoring-as yet unclassified' stamp: 'mc 12/28/2023 12:16:43'!
+withLabel: aLabel withLabelFixedWidth: aWidth withModel: aTextModel usingAs: focusMover
+
+	| labelLayoutSpec inputMorphLayoutSpec |
+
+	"self separation: 5."
+	self layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: LabeledInput recommendedHeight).
+
+	labelMorph := LabelMorph contents: aLabel.
+	labelLayoutSpec := LayoutSpec
+		fixedWidth: aWidth
+		fixedHeight: labelMorph morphHeight
+		offAxisEdgeWeight: #center.
+	self addMorph: labelMorph layoutSpec: labelLayoutSpec.
+
+	inputMorph := TabPassingTextModelMorph withModel: aTextModel.
+	inputMorph innerTextMorph focusMover: focusMover.
+	focusMover addFocusReceiver: inputMorph innerTextMorph.
+	inputMorph hideScrollBarsIndefinitely.
+	inputMorphLayoutSpec :=
+		LayoutSpec
+			proportionalWidth: 1.0
+			fixedHeight: labelMorph morphHeight + 2.
+	self addMorph: inputMorph layoutSpec: inputMorphLayoutSpec.
+
+
+
+	! !
+
+!LabeledInput class methodsFor: '*ExtractClassRefactoring-instance creation' stamp: 'mc 12/28/2023 12:13:39'!
+withLabel: aLabel withLabelFixedWidth: aWidth withModel: aPreviewModel usingAs: aFocusMover
+
+	^self newRow withLabel: aLabel withLabelFixedWidth: aWidth withModel: aPreviewModel usingAs: aFocusMover! !
 
 !BrowserWindow methodsFor: '*ExtractClassRefactoring' stamp: 'mc 10/18/2023 01:10:37'!
 contextualExtractClass
