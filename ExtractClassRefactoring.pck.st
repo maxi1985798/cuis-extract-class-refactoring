@@ -1,8 +1,18 @@
-'From Cuis 6.0 [latest update: #5981] on 29 December 2023 at 9:17:13 pm'!
+'From Cuis 6.0 [latest update: #5981] on 1 January 2024 at 10:11:04 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 12!
+!provides: 'ExtractClassRefactoring' 1 13!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
+
+!classDefinition: #PluggableListMorphOfManyForExtractClass category: 'ExtractClassRefactoring'!
+PluggableListMorphOfMany subclass: #PluggableListMorphOfManyForExtractClass
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ExtractClassRefactoring'!
+!classDefinition: 'PluggableListMorphOfManyForExtractClass class' category: 'ExtractClassRefactoring'!
+PluggableListMorphOfManyForExtractClass class
+	instanceVariableNames: ''!
 
 !classDefinition: #ExtractClassForm category: 'ExtractClassRefactoring'!
 SystemWindow subclass: #ExtractClassForm
@@ -64,6 +74,21 @@ Object subclass: #TesisExtractClassRefactoringMenu
 TesisExtractClassRefactoringMenu class
 	instanceVariableNames: ''!
 
+
+!PluggableListMorphOfManyForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 12/29/2023 23:53:00'!
+drawOn: aCanvas
+	super drawOn: aCanvas.
+	"self halt."
+	(drawKeyboardFocusIndicator and: [ self hasKeyboardFocus ]) ifTrue: [
+		aCanvas
+			frameRectangle: self focusIndicatorRectangle
+			borderWidth: (Preferences at: #focusIndicatorWidth)
+			color: Theme current focusIndicator ].! !
+
+!PluggableListMorphOfManyForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 12/30/2023 00:20:17'!
+initialize
+	self halt.
+	super initialize! !
 
 !ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/27/2023 16:35:03'!
 initializeWithModel: aModel 
@@ -234,11 +259,11 @@ buildCancelButton
 
 	^button! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/27/2023 16:32:39'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/29/2023 23:35:43'!
 buildMethodsToMoveListSection
 	| list |
 	"self halt."
-	list := PluggableListMorphOfMany
+	list := PluggableListMorphOfManyForExtractClass
 				model: self
 				listGetter: #messageList
 				primarySelectionGetter: #selectedSuite
