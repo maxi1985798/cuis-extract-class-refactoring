@@ -1,32 +1,12 @@
-'From Cuis 6.0 [latest update: #5981] on 3 January 2024 at 10:39:25 pm'!
+'From Cuis 6.0 [latest update: #5981] on 4 January 2024 at 3:34:48 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 14!
+!provides: 'ExtractClassRefactoring' 1 15!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
-!classDefinition: #InnerListMorphForExtractClass category: 'ExtractClassRefactoring'!
-InnerListMorph subclass: #InnerListMorphForExtractClass
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ExtractClassRefactoring'!
-!classDefinition: 'InnerListMorphForExtractClass class' category: 'ExtractClassRefactoring'!
-InnerListMorphForExtractClass class
-	instanceVariableNames: ''!
-
-!classDefinition: #PluggableListMorphOfManyForExtractClass category: 'ExtractClassRefactoring'!
-PluggableListMorphOfMany subclass: #PluggableListMorphOfManyForExtractClass
-	instanceVariableNames: 'scroller2'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ExtractClassRefactoring'!
-!classDefinition: 'PluggableListMorphOfManyForExtractClass class' category: 'ExtractClassRefactoring'!
-PluggableListMorphOfManyForExtractClass class
-	instanceVariableNames: ''!
-
 !classDefinition: #ExtractClassForm category: 'ExtractClassRefactoring'!
 SystemWindow subclass: #ExtractClassForm
-	instanceVariableNames: 'newClassNameSection messageSendingListSection actionButtonsSection messageListModel instanceVariableListSection instanceVariableListModel newClassNameModel variableNameToAccessNewClassModel indexVariableList variableList messageList indexMessageList'
+	instanceVariableNames: 'newClassNameSection messageSendingListSection actionButtonsSection messageListModel instanceVariableListSection instanceVariableListModel newClassNameModel variableNameToAccessNewClassModel indexVariableList variableList messageList indexMessageList labelHasReferencesToVariables'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -85,34 +65,7 @@ TesisExtractClassRefactoringMenu class
 	instanceVariableNames: ''!
 
 
-!InnerListMorphForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 1/3/2024 19:54:59'!
-draw: item atRow: row on: canvas
-	"display the given item at row row"
-	| f c |
-	"self halt."
-	(item is: #Text)
-		ifTrue: [
-			f := font emphasized: (item emphasisAt: 1).
-			c := (item colorAt: 1) ifNil: [Theme current text]]
-		ifFalse: [ 
-			f := font.
-			c :=  Theme current text].
-	canvas
-		drawString: item string
-		at: 0 @ (self drawYForRow: row)
-		font: f
-		color: c! !
-
-!PluggableListMorphOfManyForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 1/3/2024 19:23:25'!
-initialize
-	self halt.
-	super initialize.! !
-
-!PluggableListMorphOfManyForExtractClass methodsFor: 'initialization' stamp: 'mc 1/3/2024 19:22:42'!
-innerMorphClass
-	^InnerListMorphForExtractClass ! !
-
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/27/2023 16:35:03'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 1/4/2024 01:14:57'!
 initializeWithModel: aModel 
 
 	super model: aModel.
@@ -132,97 +85,98 @@ initializeWithModel: aModel
 	"messageListModel := ClassAllMessageListModel withForm: self."
 	"instanceVariableListModel := ClassAllInstanceVariableListModel withForm: self."! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/16/2023 00:08:18'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 canDiscardEdits
 	^true! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/17/2023 23:27:40'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 cancelButtonClicked
 	
 	model cancel.! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/3/2024 22:06:10'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 hasVariablesSelected: aMessage
 	
 	^self instanceVariablesToExtract anySatisfy: [ :anInstanceVariable | 
 		(model compiledMethodAt: aMessage) accessesInstanceVariable: anInstanceVariable].
 	! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:31:05'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 indexVariableList
 	^indexVariableList! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:31:20'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 indexVariableList: anIndex
 	indexVariableList := anIndex! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:28:56'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 03:31:27'!
 instanceVariableList
-	^model instanceVariableList sort! !
+	^model instanceVariableList sort collect: [ :aVariable | (Text fromString: aVariable) color: Theme current text]! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 11:34:07'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariableListIndex
 	^indexVariableList ! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 11:34:38'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariableListIndex: anIndex 
 	indexVariableList := anIndex ! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:34:00'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariablesToExtract
 	| retval |
 	retval := OrderedCollection new.
 	self instanceVariableList with: variableList do: [ :str :sel | sel ifTrue: [ retval add: str ]].
 	^retval! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/3/2024 20:48:14'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 02:35:29'!
 messageList
 	"self halt."
+	labelHasReferencesToVariables ifNotNil: [labelHasReferencesToVariables visible: (self selectorList anySatisfy: [ :aMessage | self hasVariablesSelected: aMessage])].
 	^self selectorList collect: [ :aMessage | 
 		(self hasVariablesSelected: aMessage)
 			ifTrue: [(Text fromString: aMessage) color: Color blue]
 			ifFalse: [Text fromString: aMessage]
 	]! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/2/2024 19:51:57'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 messageListMenu
 	! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:52'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 messagelistSelectionAt: anIndex
 	^messageList at: anIndex ! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:57'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 messagelistSelectionAt: anIndex put: aBoolean 
 	messageList at: anIndex put: aBoolean ! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:43'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 methodsToExtract
 	| retval |
 	retval := OrderedCollection new.
 	self messageList with: messageList do: [ :str :sel | sel ifTrue: [ retval add: str ]].
 	^retval! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:31:51'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 selectedSuite
 	^indexMessageList! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:31:41'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 selectedSuite: anInteger
 	indexMessageList := anInteger ! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 10/18/2023 00:42:31'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 selectorList
 	^model selectorList! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/18/2023 18:07:39'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 setExtents
 	| requiredExtent |
 	requiredExtent := 636.7669122572003@834.6393034159412.
 	self layoutMorph morphExtent: requiredExtent.
 	"scrollPane scroller morphExtent: requiredExtent."! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:38:12'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 submitButtonClicked
 	
 	| request |
@@ -235,31 +189,44 @@ submitButtonClicked
 	model userSubmitted: request.
 	self deleteDiscardingEdits! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:34:26'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 variablelistSelectionAt: anIndex
 	^variableList at: anIndex ! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/3/2024 22:21:37'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 variablelistSelectionAt: anIndex put: aBoolean 
 	variableList at: anIndex put: aBoolean.
 	messageSendingListSection updateList; redrawNeeded
 	! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/29/2023 01:53:31'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 windowColor
 	^Color lightGray! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/17/2023 00:49:56'!
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
+deleteDiscardingEdits
+
+	super delete.! !
+
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 02:52:20'!
+moveFrom: aTabPassingInnerTextMorph 
+	! !
+
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
+widgetsColor: aColor
+	! !
+
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 addFocusReceiver: anInnerTextMorph
 
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/10/2023 23:52:49'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 backgroundColor
 
 	^Color lightGray! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 01:02:26'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 buildActionButtonsSection
 
 	| section sectionLayoutSpec submorphsWidth sectionWidth submorphsHeight |
@@ -282,27 +249,27 @@ buildActionButtonsSection
 	^section.
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 01:02:54'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 03:02:07'!
 buildCancelButton
 
 	| button buttonLayoutSpec |
 
 	button := IndependentlyColoredButton model: self action: #cancelButtonClicked label: 'Cancel'.
 	button color: Theme current cancelButton.
-
+"
 	buttonLayoutSpec := LayoutSpec
 		fixedWidth: button morphWidth
 		fixedHeight: ExtractToMethodObjectForm fontProportionalUnitOfReferenceForHeight  * 2.
 	buttonLayoutSpec offAxisEdgeWeight: 0.85.
 	button layoutSpec: buttonLayoutSpec.
-
+"
 	^button! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/2/2024 19:54:21'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 02:36:21'!
 buildMethodsToMoveListSection
 	| list |
 	"self halt."
-	list := PluggableListMorphOfManyForExtractClass
+	list := PluggableListMorphOfMany
 				model: self
 				listGetter: #messageList
 				primarySelectionGetter: #selectedSuite
@@ -318,7 +285,7 @@ buildMethodsToMoveListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/28/2023 17:44:10'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 03:32:08'!
 buildMorphicWindow
 	|row instanceVariablesToMoveTitle methodsToMoveTitle |
 	"
@@ -358,17 +325,24 @@ buildMorphicWindow
 	row doAdoptWidgetsColor.
 	row addMorphs: (Array with: messageSendingListSection).
 	self layoutMorph addMorph: row.
-
+	
+	labelHasReferencesToVariables := LabelMorph new.
+	labelHasReferencesToVariables contents: '*Has references to selected instance variables'.
+	labelHasReferencesToVariables color: Color blue.
+	labelHasReferencesToVariables layoutSpec offAxisEdgeWeight: 0.0.
+	labelHasReferencesToVariables visible: false.
+	self layoutMorph addMorph: labelHasReferencesToVariables.
+	
 	actionButtonsSection := self buildActionButtonsSection.
 	self layoutMorph addMorph: actionButtonsSection.
 
 	self setExtents.
 
-	self showFormForMessage: 'asd'.
+	"self showFormForMessage: 'asd'."
 	
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/28/2023 17:46:17'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 buildNullObjectHierarchyClassesSection
 
 	| maxLabelWidth newClassNameInput variableNameInput |
@@ -400,23 +374,23 @@ buildNullObjectHierarchyClassesSection
 	^section"
 ! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 01:04:18'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 03:01:33'!
 buildSubmitButton
 
 	| submitButton submitButtonLayoutSpec |
 
 	submitButton := IndependentlyColoredButton model: self action: #submitButtonClicked label: 'Refactor'.
 	submitButton color: Theme current acceptButton.
-
+"
 	submitButtonLayoutSpec := LayoutSpec
 		fixedWidth: submitButton morphWidth
 		fixedHeight: ExtractToMethodObjectForm fontProportionalUnitOfReferenceForHeight  * 2.
 	submitButtonLayoutSpec offAxisEdgeWeight: 0.95.
 	submitButton layoutSpec: submitButtonLayoutSpec.
-
+"
 	^submitButton! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/3/2024 12:55:34'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 buildinstanceVariableListSection
 	| list |
 	
@@ -436,12 +410,12 @@ buildinstanceVariableListSection
 	
 	^list! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 00:28:15'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 layoutSpecForSection: aSection
 
 	^LayoutSpec proportionalWidth: 1.0 fixedHeight: aSection recommendedHeight! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/11/2023 23:50:55'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 recommendedWidthForLabels: labels
 
 	| rightMargin |
@@ -449,21 +423,12 @@ recommendedWidthForLabels: labels
 	rightMargin := 20.
 	^(labels collect: [:aLabel | FontFamily defaultFamilyAndPointSize widthOfString: aLabel]) max + rightMargin! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/16/2023 02:11:18'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 showFormForMessage: anIndex
 	^self
 ! !
 
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 10/20/2023 01:40:49'!
-deleteDiscardingEdits
-
-	super delete.! !
-
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 11/29/2023 08:34:15'!
-widgetsColor: aColor
-	! !
-
-!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 12/28/2023 17:37:35'!
+!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 1/4/2024 01:14:57'!
 open: aModel label: aString
 
 	|  window |
@@ -474,12 +439,12 @@ open: aModel label: aString
 	window openInWorld.
 	^window! !
 
-!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 10/10/2023 23:44:26'!
+!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 1/4/2024 01:14:57'!
 withModel: aModel
 
 	^self new initializeWithModel: aModel! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test001TargetClassShouldNotExist
 	
 	| targetClassName instVarToExtract sourceClass |
@@ -493,7 +458,7 @@ test001TargetClassShouldNotExist
 		failsWith: [ExtractClassRefactoring targetClassShouldNotExistsErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:58'!
 test002InstanceVariableToExtractShouldExists
 	
 	| targetClassName sourceClass instVarToExtract |
@@ -508,7 +473,7 @@ test002InstanceVariableToExtractShouldExists
 		failsWith: [ExtractClassRefactoring instanceVariable: 'iv1' shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test003InstanceVariableToExtractShouldExists
 	
 	| targetClassName sourceClass instVarToExtract |
@@ -524,7 +489,7 @@ test003InstanceVariableToExtractShouldExists
 		failsWith: [ExtractClassRefactoring instanceVariable: 'iv2' shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test004methodToExtractShouldExists
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -539,7 +504,7 @@ test004methodToExtractShouldExists
 		failsWith: [ExtractClassRefactoring selector: #m1 shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:07:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test005methodToExtractShouldExists
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -556,7 +521,7 @@ test005methodToExtractShouldExists
 		failsWith: [ExtractClassRefactoring selector: #m2 shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:49:25'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test006variableToAccessNewClassShouldNotBeInUse
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -570,7 +535,7 @@ test006variableToAccessNewClassShouldNotBeInUse
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeInUseErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 9/28/2023 00:24:59'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test006variableToAccessNewClassShouldNotBeNil
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -584,7 +549,7 @@ test006variableToAccessNewClassShouldNotBeNil
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeNilErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/3/2023 00:01:15'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -609,7 +574,7 @@ test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	aTargetClass := TargetClass new.
 	super initialize.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/3/2023 22:46:07'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test100_1extractClassShouldReuseInitialize
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -635,7 +600,7 @@ test100_1extractClassShouldReuseInitialize
 	aTargetClass := TargetClass new.
 	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 10/3/2023 23:12:04'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test100_2extractClassShouldReuseInitialize
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -665,7 +630,7 @@ test100_2extractClassShouldReuseInitialize
 	tmpvar := 1.
 	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 00:21:52'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test101GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -688,7 +653,7 @@ test101GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariabl
 	self assert: 1 equals: targetClass instVarNames size.
 	self assert: 'iv1' equals: targetClass instVarNames first.! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 00:21:56'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test102GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -713,7 +678,7 @@ test102GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariabl
 	self assert: targetClass instVarNames includes: 'iv1'.
 	self assert: targetClass instVarNames includes: 'iv2'.! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 00:22:01'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test103GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -738,7 +703,7 @@ test103GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldB
 	self assert: targetClass instVarNames includes: 'iv1'.
 	self assert: 'm1 ^aTargetClass iv1+1.' equals: (sourceClass sourceCodeAt: #m1).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 01:48:50'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test104GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -765,7 +730,7 @@ test104GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	^aTargetClass m1: self.' equals: (sourceClass sourceCodeAt: #m1).
 	self assert: 'm1: aSourceClass ^aSourceClass iv1+1.' equals: (targetClass sourceCodeAt: #m1:).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/9/2023 01:49:12'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test105Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -797,7 +762,7 @@ test105Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	^aTargetClass m2.' equals: (sourceClass sourceCodeAt: #m2).
 	self assert: 'm2 ^1.' equals: (targetClass sourceCodeAt: #m2).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/13/2023 22:39:05'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveADifferentName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -828,7 +793,7 @@ test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveA
 	^cbu' equals: (targetClass sourceCodeAt: #cbuGetter).
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 11/13/2023 22:39:38'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 test107GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenSettersShouldHaveADifferentName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -863,7 +828,7 @@ test107GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenSettersShouldHaveA
 	^counter := anObject.' equals: (targetClass sourceCodeAt: #counterSetter:).
 	! !
 
-!ExtractClassRefactoring methodsFor: 'initialization' stamp: 'mc 10/9/2023 19:50:02'!
+!ExtractClassRefactoring methodsFor: 'initialization' stamp: 'mc 1/4/2024 01:14:57'!
 initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: collectionOfInstVarsToExtract methodToExtract: collectionOfMethodsToExtract  
 	sourceClass := aSourceClassName.
 	targetClassName := aTargetClassName.
@@ -872,12 +837,12 @@ initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anI
 	variableToAccessToNewClass := anInstanceVariableNameForSourceClass.
 	! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:34:05'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/4/2024 01:14:57'!
 addInstanceVariableToAccessNewClass
 
 	^ sourceClass addInstVarName: variableToAccessToNewClass! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/29/2023 18:28:03'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/4/2024 01:14:57'!
 apply
 	
 	self 
@@ -888,7 +853,7 @@ apply
 		moveMethods.
 		! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:27:56'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/4/2024 01:14:57'!
 createNewClass
 
 	^ Object 
@@ -898,7 +863,7 @@ createNewClass
 		poolDictionaries: ''
 		category: sourceClass category! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/26/2023 00:32:15'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/4/2024 01:14:57'!
 initializeNewObject
 	| newSourceInitialize |
 	sourceClass methodDict 
@@ -912,7 +877,7 @@ initializeNewObject
 			].
 	sourceClass compile: newSourceInitialize! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/16/2023 23:04:08'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/4/2024 01:14:57'!
 moveInstanceVariables
 
 	| newGetter newSetter |
@@ -936,7 +901,7 @@ moveInstanceVariables
 			usingSetter: newSetter) apply.
 		]! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 11/13/2023 02:05:24'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/4/2024 01:14:57'!
 moveMethods
 	"self halt."
 	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
@@ -955,7 +920,7 @@ moveMethods
 			accessingThrough: variableToAccessToNewClass
 			parameterNeeded: extraParameter) apply.]! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 10/4/2023 00:20:37'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/4/2024 01:14:57'!
 newSourceCodeForInitializeWhenExists: initializeCompiledMethod 
 	| codeForTemporaries newSourceInitialize originalSourceInitialize rangesForTmpVars |
 	originalSourceInitialize := sourceClass sourceCodeAt: #initialize.
@@ -971,7 +936,7 @@ newSourceCodeForInitializeWhenExists: initializeCompiledMethod
 	newSourceInitialize := newSourceInitialize, (originalSourceInitialize copyFrom: (rangesForTmpVars last + 1) to: originalSourceInitialize size).
 	^newSourceInitialize! !
 
-!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 9/28/2023 00:53:32'!
+!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 1/4/2024 01:14:57'!
 from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  
 	
 	Smalltalk
@@ -988,40 +953,40 @@ from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableN
 	
 	^self new initializeFrom: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  ! !
 
-!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 9/21/2023 00:47:54'!
+!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariable: anInsVarName shouldExistsOn: aClassName 
 	^'instance variable ', anInsVarName, ' should exists on ', aClassName! !
 
-!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 9/21/2023 00:34:28'!
+!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariableToExtractShouldExistsOnSourceClass
 	^'instance variable to extract should exists on source class'.! !
 
-!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 9/21/2023 01:14:52'!
+!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 1/4/2024 01:14:57'!
 selector: aSelector shouldExistsOn: aClassName 
 	^'selector ', aSelector, ' should exists on ', aClassName! !
 
-!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 9/18/2023 23:19:13'!
+!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 1/4/2024 01:14:57'!
 targetClassShouldNotExistsErrorMessage
 	^'Target class should not exists'! !
 
-!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 9/28/2023 00:54:15'!
+!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 1/4/2024 01:14:57'!
 variableToAccessNewClassShouldNotBeInUseErrorMessage
 	^'variable to access new class should not be in use'! !
 
-!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 9/28/2023 00:24:04'!
+!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 1/4/2024 01:14:57'!
 variableToAccessNewClassShouldNotBeNilErrorMessage
 	^'variable to access new class should not be nil'! !
 
-!ExtractClassApplier methodsFor: 'initialization' stamp: 'mc 10/10/2023 23:04:03'!
+!ExtractClassApplier methodsFor: 'initialization' stamp: 'mc 1/4/2024 01:14:57'!
 initializeToApplyOn: aClass
 
 	classToRefactor := aClass.! !
 
-!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 10/17/2023 23:28:15'!
+!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 cancel
 	form delete.! !
 
-!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 11/5/2023 19:33:56'!
+!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:56'!
 createRefactoring
 	"self halt."
 	
@@ -1032,11 +997,11 @@ createRefactoring
 		instVarToExtract: extractClassRequest instanceVariablesToExtract
 		methodToExtract: extractClassRequest methodsToExtract.! !
 
-!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 10/10/2023 23:05:01'!
+!ExtractClassApplier methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
 value
 	self requestRefactoringParametersHandlingRefactoringExceptions.! !
 
-!ExtractClassApplier methodsFor: 'refactoring - parameters request' stamp: 'mc 10/10/2023 23:40:49'!
+!ExtractClassApplier methodsFor: 'refactoring - parameters request' stamp: 'mc 1/4/2024 01:14:57'!
 requestRefactoringParameters
 
 	"ver si hay que agregar check si la clase esta vacia"
@@ -1050,23 +1015,23 @@ requestRefactoringParameters
 "
 	form := ExtractClassForm open: self.! !
 
-!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 11/15/2023 01:49:03'!
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 classToRefactorName
 	^classToRefactor name! !
 
-!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/3/2024 22:10:41'!
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 compiledMethodAt: aMessage 
 	^classToRefactor compiledMethodAt: aMessage! !
 
-!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 10/18/2023 01:04:18'!
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariableList
 	^classToRefactor instVarNames ! !
 
-!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 10/18/2023 00:50:43'!
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 selectorList
 	^classToRefactor selectors sort! !
 
-!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:59:44'!
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 userSubmitted: request 
 	
 	extractClassRequest := request.
@@ -1074,36 +1039,36 @@ userSubmitted: request
 	refactoring ifNotNil: [self applyRefactoring].
 	! !
 
-!ExtractClassApplier class methodsFor: 'instance creation' stamp: 'mc 10/10/2023 23:03:08'!
+!ExtractClassApplier class methodsFor: 'instance creation' stamp: 'mc 1/4/2024 01:14:57'!
 applyOn: aClass 
 	
 	^self new initializeToApplyOn: aClass! !
 
-!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/23/2023 01:43:09'!
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariablesToExtract
 
 	^instanceVariableListModel instanceVariablesToExtract! !
 
-!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/23/2023 02:16:17'!
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 methodsToExtract
 	^messageListModel methodsToExtract! !
 
-!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/23/2023 01:32:22'!
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 newClassName
 	^newClassNameModel actualContents asString asSymbol ! !
 
-!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 10/29/2023 15:34:38'!
+!ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 variableNameToAccessNewClass
 	^variableNameToAccessNewClassModel actualContents string ! !
 
-!ExtractClassObjectRequest methodsFor: 'initialization' stamp: 'mc 10/29/2023 15:32:35'!
+!ExtractClassObjectRequest methodsFor: 'initialization' stamp: 'mc 1/4/2024 01:14:57'!
 initializeNewWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel 
 	newClassNameModel := aNewClassNameModel.
 	messageListModel := aMessageListModel.
 	instanceVariableListModel := anInstanceVariableListModel.
 	variableNameToAccessNewClassModel := aVariableNameToAccessNewClassModel.! !
 
-!ExtractClassObjectRequest class methodsFor: 'instance creation' stamp: 'mc 10/29/2023 15:32:12'!
+!ExtractClassObjectRequest class methodsFor: 'instance creation' stamp: 'mc 1/4/2024 01:14:57'!
 newWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel instanceVariableListModel: anInstanceVariableListModel variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel 
 	^self new 
 		initializeNewWithNameModel: aNewClassNameModel 
@@ -1111,7 +1076,7 @@ newWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel insta
 		instanceVariableListModel: anInstanceVariableListModel 
 		variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel ! !
 
-!TesisExtractClassRefactoringMenu class methodsFor: 'as yet unclassified' stamp: 'mc 10/10/2023 01:16:47'!
+!TesisExtractClassRefactoringMenu class methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:58'!
 classListMenuOptions
 
 	^ `{	
