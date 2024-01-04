@@ -1,12 +1,22 @@
-'From Cuis 6.0 [latest update: #5981] on 1 January 2024 at 10:11:04 pm'!
+'From Cuis 6.0 [latest update: #5981] on 3 January 2024 at 10:39:25 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 13!
+!provides: 'ExtractClassRefactoring' 1 14!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
+!classDefinition: #InnerListMorphForExtractClass category: 'ExtractClassRefactoring'!
+InnerListMorph subclass: #InnerListMorphForExtractClass
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ExtractClassRefactoring'!
+!classDefinition: 'InnerListMorphForExtractClass class' category: 'ExtractClassRefactoring'!
+InnerListMorphForExtractClass class
+	instanceVariableNames: ''!
+
 !classDefinition: #PluggableListMorphOfManyForExtractClass category: 'ExtractClassRefactoring'!
 PluggableListMorphOfMany subclass: #PluggableListMorphOfManyForExtractClass
-	instanceVariableNames: ''
+	instanceVariableNames: 'scroller2'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -75,20 +85,32 @@ TesisExtractClassRefactoringMenu class
 	instanceVariableNames: ''!
 
 
-!PluggableListMorphOfManyForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 12/29/2023 23:53:00'!
-drawOn: aCanvas
-	super drawOn: aCanvas.
+!InnerListMorphForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 1/3/2024 19:54:59'!
+draw: item atRow: row on: canvas
+	"display the given item at row row"
+	| f c |
 	"self halt."
-	(drawKeyboardFocusIndicator and: [ self hasKeyboardFocus ]) ifTrue: [
-		aCanvas
-			frameRectangle: self focusIndicatorRectangle
-			borderWidth: (Preferences at: #focusIndicatorWidth)
-			color: Theme current focusIndicator ].! !
+	(item is: #Text)
+		ifTrue: [
+			f := font emphasized: (item emphasisAt: 1).
+			c := (item colorAt: 1) ifNil: [Theme current text]]
+		ifFalse: [ 
+			f := font.
+			c :=  Theme current text].
+	canvas
+		drawString: item string
+		at: 0 @ (self drawYForRow: row)
+		font: f
+		color: c! !
 
-!PluggableListMorphOfManyForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 12/30/2023 00:20:17'!
+!PluggableListMorphOfManyForExtractClass methodsFor: 'as yet unclassified' stamp: 'mc 1/3/2024 19:23:25'!
 initialize
 	self halt.
-	super initialize! !
+	super initialize.! !
+
+!PluggableListMorphOfManyForExtractClass methodsFor: 'initialization' stamp: 'mc 1/3/2024 19:22:42'!
+innerMorphClass
+	^InnerListMorphForExtractClass ! !
 
 !ExtractClassForm methodsFor: 'initialization' stamp: 'mc 12/27/2023 16:35:03'!
 initializeWithModel: aModel 
@@ -119,6 +141,13 @@ cancelButtonClicked
 	
 	model cancel.! !
 
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/3/2024 22:06:10'!
+hasVariablesSelected: aMessage
+	
+	^self instanceVariablesToExtract anySatisfy: [ :anInstanceVariable | 
+		(model compiledMethodAt: aMessage) accessesInstanceVariable: anInstanceVariable].
+	! !
+
 !ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:31:05'!
 indexVariableList
 	^indexVariableList! !
@@ -146,10 +175,18 @@ instanceVariablesToExtract
 	self instanceVariableList with: variableList do: [ :str :sel | sel ifTrue: [ retval add: str ]].
 	^retval! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:32'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/3/2024 20:48:14'!
 messageList
 	"self halt."
-	^self selectorList! !
+	^self selectorList collect: [ :aMessage | 
+		(self hasVariablesSelected: aMessage)
+			ifTrue: [(Text fromString: aMessage) color: Color blue]
+			ifFalse: [Text fromString: aMessage]
+	]! !
+
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/2/2024 19:51:57'!
+messageListMenu
+	! !
 
 !ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/27/2023 16:30:52'!
 messagelistSelectionAt: anIndex
@@ -202,9 +239,11 @@ submitButtonClicked
 variablelistSelectionAt: anIndex
 	^variableList at: anIndex ! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 12/26/2023 15:34:45'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/3/2024 22:21:37'!
 variablelistSelectionAt: anIndex put: aBoolean 
-	variableList at: anIndex put: aBoolean ! !
+	variableList at: anIndex put: aBoolean.
+	messageSendingListSection updateList; redrawNeeded
+	! !
 
 !ExtractClassForm methodsFor: 'accessing' stamp: 'mc 11/29/2023 01:53:31'!
 windowColor
@@ -259,7 +298,7 @@ buildCancelButton
 
 	^button! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/29/2023 23:35:43'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/2/2024 19:54:21'!
 buildMethodsToMoveListSection
 	| list |
 	"self halt."
@@ -271,8 +310,8 @@ buildMethodsToMoveListSection
 				listSelectionGetter: #messagelistSelectionAt:
 				listSelectionSetter: #messagelistSelectionAt:put:
 				mainView: self
-				menuGetter: #messageListMenu
-				keystrokeAction: #messageListKey:from:.
+				menuGetter: nil
+				keystrokeAction: nil.
 	
 	list color: Color white.
 	list layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: IntroduceNullObjectForm fontProportionalUnitOfReferenceForHeight * 7).
@@ -377,7 +416,7 @@ buildSubmitButton
 
 	^submitButton! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 12/26/2023 15:35:49'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/3/2024 12:55:34'!
 buildinstanceVariableListSection
 	| list |
 	
@@ -389,20 +428,12 @@ buildinstanceVariableListSection
 				listSelectionGetter: #variablelistSelectionAt:
 				listSelectionSetter: #variablelistSelectionAt:put:
 				mainView: self
-				menuGetter: #messageListMenu
-				keystrokeAction: #messageListKey:from:.
+				menuGetter: nil
+				keystrokeAction: nil.
 	
 	list color: Color white.
 	list layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: IntroduceNullObjectForm fontProportionalUnitOfReferenceForHeight * 7).
 	
-	"
-	maxLabelWidth := self recommendedWidthForLabels: #('New class name').
-	nullClassInput := LabeledInput 
-					withLabel: 'Instance variables:'
-					withWidth: maxLabelWidth
-					withModel: list
-					usingAs: self.
-"
 	^list! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 10/12/2023 00:28:15'!
@@ -1022,6 +1053,10 @@ requestRefactoringParameters
 !ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 11/15/2023 01:49:03'!
 classToRefactorName
 	^classToRefactor name! !
+
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/3/2024 22:10:41'!
+compiledMethodAt: aMessage 
+	^classToRefactor compiledMethodAt: aMessage! !
 
 !ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 10/18/2023 01:04:18'!
 instanceVariableList
