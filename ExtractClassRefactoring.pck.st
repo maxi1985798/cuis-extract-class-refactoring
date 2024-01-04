@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 4 January 2024 at 3:34:48 am'!
+'From Cuis 6.0 [latest update: #5981] on 4 January 2024 at 5:50:05 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 15!
+!provides: 'ExtractClassRefactoring' 1 16!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -109,9 +109,10 @@ indexVariableList
 indexVariableList: anIndex
 	indexVariableList := anIndex! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 03:31:27'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 16:53:14'!
 instanceVariableList
-	^model instanceVariableList sort collect: [ :aVariable | (Text fromString: aVariable) color: Theme current text]! !
+	^model instanceVariableList sort collect: [ :aVariable | 
+		(Text fromString: aVariable) color: self colorForInstVar ]! !
 
 !ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/4/2024 01:14:57'!
 instanceVariableListIndex
@@ -203,19 +204,6 @@ variablelistSelectionAt: anIndex put: aBoolean
 windowColor
 	^Color lightGray! !
 
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
-deleteDiscardingEdits
-
-	super delete.! !
-
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 02:52:20'!
-moveFrom: aTabPassingInnerTextMorph 
-	! !
-
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
-widgetsColor: aColor
-	! !
-
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 addFocusReceiver: anInnerTextMorph
 
@@ -285,49 +273,28 @@ buildMethodsToMoveListSection
 
 	^list! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 03:32:08'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 17:45:57'!
 buildMorphicWindow
-	|row instanceVariablesToMoveTitle methodsToMoveTitle |
-	"
-	scrollPane := ColoredScrollPane initializedInstance.
-	scrollPane scroller color: self backgroundColor.
-	scrollPane scroller layoutSpec: LayoutSpec useAll.
-	scrollPane color: self backgroundColor.
-	"
-	"self layoutMorph addMorphUseAll: scrollPane."
-	
-	"formLayout := LayoutMorph newColumn."
+	| instanceVariablesToMoveTitle methodsToMoveTitle |
 	self layoutMorph separation: 5; color: self backgroundColor.
 	
-	"scrollPane scroller addMorph: formLayout."
 	self layoutMorph color: self backgroundColor.
-	"self layoutMorph addMorphUseAll: formLayout."
 	self layoutMorph axisEdgeWeight: #columnTop.
-	"self halt."
 	newClassNameSection := self buildNullObjectHierarchyClassesSection.
-	"formLayout addMorph: newClassNameSection."
 
 	instanceVariableListSection := self buildinstanceVariableListSection.
 	instanceVariablesToMoveTitle := LabelMorph contents: 'Select instance variables to move:'.
-"	instanceVariablesToMoveTitle contents: 'Select instance variables to move:'."
 	instanceVariablesToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
 	self layoutMorph addMorph: instanceVariablesToMoveTitle.
 	self layoutMorph addMorph: instanceVariableListSection.
 	methodsToMoveTitle := LabelMorph contents: 'Select methods to move:'.
 	methodsToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
 	self layoutMorph addMorph: methodsToMoveTitle.
-	"self halt."
-	"xsList := InnerListMorph new."
-	"xsList model: messageListModel."
 	messageSendingListSection := self buildMethodsToMoveListSection.
-	"messageSendingListSection addMorph: xsList."
-	row := LayoutMorph new.
-	row doAdoptWidgetsColor.
-	row addMorphs: (Array with: messageSendingListSection).
-	self layoutMorph addMorph: row.
+	self layoutMorph addMorph: messageSendingListSection.
 	
 	labelHasReferencesToVariables := LabelMorph new.
-	labelHasReferencesToVariables contents: '*Has references to selected instance variables'.
+	labelHasReferencesToVariables contents: '*Reference to selected instance variables'.
 	labelHasReferencesToVariables color: Color blue.
 	labelHasReferencesToVariables layoutSpec offAxisEdgeWeight: 0.0.
 	labelHasReferencesToVariables visible: false.
@@ -337,19 +304,17 @@ buildMorphicWindow
 	self layoutMorph addMorph: actionButtonsSection.
 
 	self setExtents.
-
-	"self showFormForMessage: 'asd'."
-	
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 17:25:56'!
 buildNullObjectHierarchyClassesSection
 
 	| maxLabelWidth newClassNameInput variableNameInput |
 
 "self halt."
 	maxLabelWidth := self recommendedWidthForLabels: #('New class name' 'Variable name to access new class').
-	newClassNameModel := TextModel withText: 'NameOfNewClass'.
+	newClassNameModel := TextModel withText: (((Text fromString: 'NameOfNewClass') color: self colorForClassName) bold).
+"	newClassNameModel actualContents bold."
 	newClassNameInput := LabeledInput 
 					withLabel: 'New class name'
 					withLabelFixedWidth: maxLabelWidth
@@ -357,6 +322,7 @@ buildNullObjectHierarchyClassesSection
 					usingAs: self.
 
 	variableNameToAccessNewClassModel := TextModel withText: 'aNameOfVariable'.
+	variableNameToAccessNewClassModel actualContents color: self colorForInstVar .
 	variableNameInput := LabeledInput 
 					withLabel: 'Variable name to access new class'
 					withLabelFixedWidth: maxLabelWidth
@@ -374,20 +340,13 @@ buildNullObjectHierarchyClassesSection
 	^section"
 ! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 03:01:33'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 16:44:34'!
 buildSubmitButton
 
-	| submitButton submitButtonLayoutSpec |
+	| submitButton |
 
 	submitButton := IndependentlyColoredButton model: self action: #submitButtonClicked label: 'Refactor'.
 	submitButton color: Theme current acceptButton.
-"
-	submitButtonLayoutSpec := LayoutSpec
-		fixedWidth: submitButton morphWidth
-		fixedHeight: ExtractToMethodObjectForm fontProportionalUnitOfReferenceForHeight  * 2.
-	submitButtonLayoutSpec offAxisEdgeWeight: 0.95.
-	submitButton layoutSpec: submitButtonLayoutSpec.
-"
 	^submitButton! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
@@ -410,10 +369,15 @@ buildinstanceVariableListSection
 	
 	^list! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
-layoutSpecForSection: aSection
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 17:21:29'!
+colorForClassName
 
-	^LayoutSpec proportionalWidth: 1.0 fixedHeight: aSection recommendedHeight! !
+	^ Color blue! !
+
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 16:53:14'!
+colorForInstVar
+
+	^ Color magenta muchDarker! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/4/2024 01:14:57'!
 recommendedWidthForLabels: labels
@@ -427,6 +391,19 @@ recommendedWidthForLabels: labels
 showFormForMessage: anIndex
 	^self
 ! !
+
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
+deleteDiscardingEdits
+
+	super delete.! !
+
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 02:52:20'!
+moveFrom: aTabPassingInnerTextMorph 
+	! !
+
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/4/2024 01:14:57'!
+widgetsColor: aColor
+	! !
 
 !ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 1/4/2024 01:14:57'!
 open: aModel label: aString
