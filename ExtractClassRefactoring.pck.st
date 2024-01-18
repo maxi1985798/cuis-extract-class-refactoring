@@ -1,6 +1,6 @@
-'From Cuis 6.0 [latest update: #5981] on 16 January 2024 at 2:38:45 am'!
+'From Cuis 6.0 [latest update: #5981] on 18 January 2024 at 2:18:18 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 17!
+!provides: 'ExtractClassRefactoring' 1 19!
 SystemOrganization addCategory: 'ExtractClassRefactoring'!
 
 
@@ -65,13 +65,10 @@ TesisExtractClassRefactoringMenu class
 	instanceVariableNames: ''!
 
 
-!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 1/7/2024 23:55:41'!
+!ExtractClassForm methodsFor: 'initialization' stamp: 'mc 1/16/2024 23:13:47'!
 initializeWithModel: aModel 
 
 	super model: aModel.
-	
-	self setLabel: 'Extract class refactoring for ', aModel classToRefactorName .
-	
 	indexVariableList := 0.
 	indexMessageList := 0.
 	variableList := self variableListAsString collect: [:ea | false].
@@ -160,10 +157,10 @@ selectedSuite: anInteger
 selectorList
 	^model selectorList! !
 
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/7/2024 23:55:41'!
+!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/18/2024 02:15:36'!
 variableListAsString
 
-	^ model instanceVariableList sort! !
+	^ model instanceVariableList! !
 
 !ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/5/2024 01:23:50'!
 variablelistSelectionAt: anIndex
@@ -174,20 +171,6 @@ variablelistSelectionAt: anIndex put: aBoolean
 	variableList at: anIndex put: aBoolean.
 	messageSendingListSection updateList; redrawNeeded
 	! !
-
-!ExtractClassForm methodsFor: 'accessing' stamp: 'mc 1/5/2024 01:23:50'!
-windowColor
-	^Color lightGray! !
-
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
-addFocusReceiver: anInnerTextMorph
-
-	! !
-
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
-backgroundColor
-
-	^Color lightGray! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/15/2024 01:37:48'!
 buildActionButtonsSection
@@ -212,16 +195,19 @@ buildActionButtonsSection
 	
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/15/2024 01:19:16'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 23:06:37'!
 buildCancelButton
 
 	| button |
 
-	button := IndependentlyColoredButton model: self action: #cancelButtonClicked label: 'Cancel'.
-	button color: Theme current cancelButton.
+	button := IndependentlyColoredButton 
+				model: self
+				action: #cancelButtonClicked
+				label: self labelButtonCancel.
+	button color: self cancelButtonColor.
 	^button! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/16/2024 01:44:01'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:38:45'!
 buildMethodsToMoveListSection
 	| list methodsToMoveTitle |
 	"self halt."
@@ -239,17 +225,18 @@ buildMethodsToMoveListSection
 	list color: Color white.
 	list layoutSpec: (LayoutSpec proportionalWidth: 1.0).
 	
-	methodsToMoveTitle := LabelMorph contents: 'Select methods to move:'.
+	methodsToMoveTitle := LabelMorph contents: self labelSelectMethodsToMove.
 	methodsToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
 	self layoutMorph addMorph: methodsToMoveTitle.
 	messageSendingListSection := list.
 	self layoutMorph addMorph: messageSendingListSection.
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/16/2024 00:28:48'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/16/2024 23:13:28'!
 buildMorphicWindow
 	
 	self 
+		setWindowTitle;
 		setConfigurationOnLayoutMorph;
 		buildNewClassNameSection;
 		buildVariableToAccessNewClassSection;
@@ -260,62 +247,67 @@ buildMorphicWindow
 		setExtents
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/15/2024 02:02:56'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:39:02'!
 buildNewClassNameSection
 
-	| maxLabelWidth newClassNameInput |
-
-	maxLabelWidth := self recommendedWidthForLabels: #('New class name' 'Variable name to access new class').
+	| maxLabelWidth newClassNameInput nameForNewClassLabel |
+	"self halt."
+	nameForNewClassLabel := self labelNameForNewClass..
+	maxLabelWidth := self recommendedWidthForLabels: (Array with: nameForNewClassLabel with: self labelVariableToAccessNewClass).
 	newClassNameModel := TextModel withText: (((Text fromString: 'NameOfNewClass') color: self colorForClassName) bold).
 
 	newClassNameInput := LabeledInput 
-					withLabel: 'New class name'
+					withLabel: nameForNewClassLabel
 					withLabelFixedWidth: maxLabelWidth
 					withModel: newClassNameModel
 					usingAs: self.
+	newClassNameInput emptyTextDisplayMessage: self labelPleaseProvideNewClassName.
 	self layoutMorph addMorph: newClassNameInput.
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/15/2024 01:36:56'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:40:42'!
 buildReferencesToVariablesLabel
 
 	labelHasReferencesToVariables := LabelMorph new.
-	labelHasReferencesToVariables contents: '*Reference to selected instance variables'.
+	labelHasReferencesToVariables contents: self labelReferenceToSelectedInstanceVariable.
 	labelHasReferencesToVariables color: Color blue.
 	labelHasReferencesToVariables layoutSpec offAxisEdgeWeight: 0.0.
 	labelHasReferencesToVariables visible: false.
 	self layoutMorph addMorph: labelHasReferencesToVariables! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 23:07:22'!
 buildSubmitButton
 
 	| submitButton |
 
-	submitButton := IndependentlyColoredButton model: self action: #submitButtonClicked label: 'Refactor'.
-	submitButton color: Theme current acceptButton.
+	submitButton := IndependentlyColoredButton 
+					model: self
+					action: #submitButtonClicked
+					label: self labelButtonRefactor.
+	submitButton color: self acceptButtonColor.
 	^submitButton! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/15/2024 02:01:59'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 23:01:57'!
 buildVariableToAccessNewClassSection
 
-	| maxLabelWidth variableNameInput |
-
-	maxLabelWidth := self recommendedWidthForLabels: #('New class name' 'Variable name to access new class').
+	| maxLabelWidth variableNameInput variableToAccessNewClassLabel |
+	variableToAccessNewClassLabel := self labelVariableToAccessNewClass.
+	maxLabelWidth := self recommendedWidthForLabels: (Array with: self labelNameForNewClass with: variableToAccessNewClassLabel).
 	
 	variableNameToAccessNewClassModel := TextModel withText: 'aNameOfVariable'.
 	variableNameToAccessNewClassModel actualContents color: self colorForInstVar .
 	variableNameInput := LabeledInput 
-					withLabel: 'Variable name to access new class'
+					withLabel: variableToAccessNewClassLabel
 					withLabelFixedWidth: maxLabelWidth
 					withModel: variableNameToAccessNewClassModel
 					usingAs: self.
 	
-	
+	variableNameInput emptyTextDisplayMessage: self labelPleaseProvideNewInstVarName.
 	self layoutMorph addMorph: variableNameInput.
 	
 ! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/15/2024 01:28:19'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 23:03:36'!
 buildinstanceVariableListSection
 	| list instanceVariablesToMoveTitle |
 	
@@ -331,22 +323,12 @@ buildinstanceVariableListSection
 				keystrokeAction: nil.
 	
 	list color: Color white.
-	list layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: IntroduceNullObjectForm fontProportionalUnitOfReferenceForHeight * 7).
-	instanceVariablesToMoveTitle := LabelMorph contents: 'Select instance variables to move:'.
+	list layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: ExtractClassForm fontProportionalUnitOfReferenceForHeight * 7).
+	instanceVariablesToMoveTitle := LabelMorph contents: self labelSelectInstVarToMove.
 	instanceVariablesToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
 	self layoutMorph addMorph: instanceVariablesToMoveTitle.
 	self layoutMorph addMorph: list.
 ! !
-
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
-colorForClassName
-
-	^ Color blue! !
-
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
-colorForInstVar
-
-	^ Color magenta muchDarker! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
 recommendedWidthForLabels: labels
@@ -371,30 +353,60 @@ setExtents
 	self layoutMorph morphExtent: requiredExtent.
 	"scrollPane scroller morphExtent: requiredExtent."! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
-showFormForMessage: anIndex
-	^self
-! !
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:38:09'!
+setWindowTitle
 
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:50'!
-deleteDiscardingEdits
+	^ self setLabel: self labelExtractClassTitle! !
 
-	super delete.! !
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/17/2024 23:11:45'!
+addFocusReceiver: anInnerTextMorph
+	"this method is requeried by LabeledInput"
+
+	! !
 
 !ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 02:37:43'!
 moveFrom: aTabPassingInnerTextMorph 
 	"this method is to disable tab key"! !
 
-!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:50'!
+!ExtractClassForm methodsFor: 'as yet unclassified' stamp: 'mc 1/17/2024 23:09:01'!
 widgetsColor: aColor
-	! !
+	"this method is to not make a transparent background"! !
+
+!ExtractClassForm methodsFor: 'colors' stamp: 'mc 1/17/2024 01:18:25'!
+acceptButtonColor
+
+	^ Theme current acceptButton! !
+
+!ExtractClassForm methodsFor: 'colors' stamp: 'mc 1/5/2024 01:23:50'!
+backgroundColor
+
+	^Color lightGray! !
+
+!ExtractClassForm methodsFor: 'colors' stamp: 'mc 1/16/2024 23:06:02'!
+cancelButtonColor
+
+	^ Theme current cancelButton! !
+
+!ExtractClassForm methodsFor: 'colors' stamp: 'mc 1/5/2024 01:23:50'!
+colorForClassName
+
+	^ Color blue! !
+
+!ExtractClassForm methodsFor: 'colors' stamp: 'mc 1/5/2024 01:23:50'!
+colorForInstVar
+
+	^ Color magenta muchDarker! !
+
+!ExtractClassForm methodsFor: 'colors' stamp: 'mc 1/5/2024 01:23:50'!
+windowColor
+	^Color lightGray! !
 
 !ExtractClassForm methodsFor: 'actions' stamp: 'mc 1/5/2024 01:23:50'!
 cancelButtonClicked
 	
 	model cancel.! !
 
-!ExtractClassForm methodsFor: 'actions' stamp: 'mc 1/5/2024 01:23:50'!
+!ExtractClassForm methodsFor: 'actions' stamp: 'mc 1/16/2024 23:41:56'!
 submitButtonClicked
 	
 	| request |
@@ -405,13 +417,68 @@ submitButtonClicked
 					instanceVariableListModel: self
 					variableNameToAccessThroughModel: variableNameToAccessNewClassModel .
 	model userSubmitted: request.
-	self deleteDiscardingEdits! !
+	self delete! !
 
-!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 1/5/2024 01:23:50'!
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 23:05:44'!
+labelButtonCancel
+
+	^ 'Cancel'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 23:04:47'!
+labelButtonRefactor
+
+	^ 'Refactor'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 20:38:09'!
+labelExtractClassTitle
+
+	^ 'Extract class from ', model classToRefactorName! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 20:37:41'!
+labelNameForNewClass
+
+	^ 'Name for new class'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 20:37:06'!
+labelPleaseProvideNewClassName
+
+	^ 'Please provide a new class name'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 23:01:56'!
+labelPleaseProvideNewInstVarName
+
+	^ 'Please provide a new instance variable name'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 20:40:42'!
+labelReferenceToSelectedInstanceVariable
+
+	^ '*Reference to selected instance variables'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 23:03:36'!
+labelSelectInstVarToMove
+
+	^ 'Select instance variables to move:'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 20:38:45'!
+labelSelectMethodsToMove
+
+	^ 'Select methods to move:'! !
+
+!ExtractClassForm methodsFor: 'label' stamp: 'mc 1/17/2024 20:39:02'!
+labelVariableToAccessNewClass
+
+	^ 'Variable name to access new class'! !
+
+!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 1/16/2024 23:08:41'!
+fontProportionalUnitOfReferenceForHeight
+
+	^(Preferences at: #windowTitleFont) lineSpacing+1 ! !
+
+!ExtractClassForm class methodsFor: 'instance creation' stamp: 'mc 1/16/2024 23:18:34'!
 open: aModel label: aString
 
 	|  window |
-	"self halt."
+	
 	window := self withModel: aModel.
 	window buildMorphicWindow.
 	aString ifNotNil: [ window setLabel: aString ].
@@ -1002,9 +1069,9 @@ classToRefactorName
 compiledMethodAt: aMessage 
 	^classToRefactor compiledMethodAt: aMessage! !
 
-!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/5/2024 01:23:50'!
+!ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/18/2024 02:15:42'!
 instanceVariableList
-	^classToRefactor instVarNames ! !
+	^classToRefactor instVarNames sorted! !
 
 !ExtractClassApplier methodsFor: 'accessing' stamp: 'mc 1/5/2024 01:23:50'!
 selectorList
@@ -1068,6 +1135,11 @@ classListMenuOptions
 				#icon 			-> 		#newFolderIcon
 			} asDictionary.			
 	}`.! !
+
+!LabeledInput methodsFor: '*ExtractClassRefactoring-as yet unclassified' stamp: 'mc 1/17/2024 19:25:32'!
+emptyTextDisplayMessage: aString
+
+	inputMorph emptyTextDisplayMessage: aString! !
 
 !LabeledInput methodsFor: '*ExtractClassRefactoring-as yet unclassified' stamp: 'mc 12/28/2023 12:16:43'!
 withLabel: aLabel withLabelFixedWidth: aWidth withModel: aTextModel usingAs: focusMover
