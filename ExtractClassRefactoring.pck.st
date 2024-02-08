@@ -1,12 +1,12 @@
-'From Cuis6.3 [latest update: #6169] on 5 February 2024 at 2:10:04 am'!
+'From Cuis6.3 [latest update: #6169] on 8 February 2024 at 2:05:10 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 21!
+!provides: 'ExtractClassRefactoring' 1 22!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
 !classDefinition: #ExtractClassForm category: #ExtractClassRefactoring!
 SystemWindow subclass: #ExtractClassForm
-	instanceVariableNames: 'messageSendingListSection newClassNameModel variableNameToAccessNewClassModel indexVariableList variableList messageList indexMessageList labelHasReferencesToVariables'
+	instanceVariableNames: 'messageSendingListSection newClassNameModel variableNameToAccessNewClassModel indexVariableList variableList messageList indexMessageList labelHasReferencesToVariables buttonsSection newClassNameLabeledInput variableNameToAccessNewClassLabeledInput instanceVariableListSection instanceVariablesToMoveTitle methodsToMoveTitle'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ExtractClassRefactoring'!
@@ -172,26 +172,26 @@ variablelistSelectionAt: anIndex put: aBoolean
 	messageSendingListSection updateList; redrawNeeded
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/15/2024 01:37:48'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 00:51:54'!
 buildActionButtonsSection
 
-	| section sectionLayoutSpec submorphsWidth sectionWidth submorphsHeight |
+	|  sectionLayoutSpec submorphsWidth sectionWidth submorphsHeight |
 
-	section := LayoutMorph newRow.
-	section separation: 10.
-	section color: self backgroundColor.
+	buttonsSection := LayoutMorph newRow.
+	buttonsSection separation: 10.
+	buttonsSection color: self backgroundColor.
 
-	section addMorph: self buildCancelButton.
-	section addMorph: self buildSubmitButton.
+	buttonsSection addMorph: self buildCancelButton.
+	buttonsSection addMorph: self buildSubmitButton.
 
-	submorphsWidth := (section submorphs collect: [:aSubmorph | aSubmorph layoutSpec fixedOrMinimumLayoutWidth]) sum.
-	sectionWidth := submorphsWidth + (section xSeparation * (section submorphs size + 1)).
-	submorphsHeight := (section submorphs collect: [:aSubmorph | aSubmorph layoutSpec fixedOrMinimumLayoutHeight]) max.
+	submorphsWidth := (buttonsSection submorphs collect: [:aSubmorph | aSubmorph layoutSpec fixedOrMinimumLayoutWidth]) sum.
+	sectionWidth := submorphsWidth + (buttonsSection xSeparation * (buttonsSection submorphs size + 1)).
+	submorphsHeight := (buttonsSection submorphs collect: [:aSubmorph | aSubmorph layoutSpec fixedOrMinimumLayoutHeight]) max.
 	sectionLayoutSpec := LayoutSpec fixedWidth: sectionWidth fixedHeight: submorphsHeight * 2.
 	sectionLayoutSpec offAxisEdgeWeight: 0.95.
 
-	section layoutSpec: sectionLayoutSpec.
-	self layoutMorph addMorph: section.
+	buttonsSection layoutSpec: sectionLayoutSpec.
+	self layoutMorph addMorph: buttonsSection.
 	
 	! !
 
@@ -207,9 +207,9 @@ buildCancelButton
 	button color: self cancelButtonColor.
 	^button! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:38:45'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:14:29'!
 buildMethodsToMoveListSection
-	| list methodsToMoveTitle |
+	| list |
 	"self halt."
 	list := PluggableListMorphOfMany
 				model: self
@@ -225,14 +225,19 @@ buildMethodsToMoveListSection
 	list color: Color white.
 	list layoutSpec: (LayoutSpec proportionalWidth: 1.0).
 	
-	methodsToMoveTitle := LabelMorph contents: self labelSelectMethodsToMove.
-	methodsToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
-	self layoutMorph addMorph: methodsToMoveTitle.
 	messageSendingListSection := list.
 	self layoutMorph addMorph: messageSendingListSection.
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/16/2024 23:13:28'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:14:54'!
+buildMethodsToMoveListTitle
+	 
+	methodsToMoveTitle := LabelMorph contents: self labelSelectMethodsToMove.
+	methodsToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
+	self layoutMorph addMorph: methodsToMoveTitle.
+	! !
+
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:15:31'!
 buildMorphicWindow
 	
 	self 
@@ -240,29 +245,31 @@ buildMorphicWindow
 		setConfigurationOnLayoutMorph;
 		buildNewClassNameSection;
 		buildVariableToAccessNewClassSection;
+		buildinstanceVariableListTitle;
 		buildinstanceVariableListSection;
+		buildMethodsToMoveListTitle;
 		buildMethodsToMoveListSection;
 		buildReferencesToVariablesLabel;
 		buildActionButtonsSection;
 		setExtents
 	! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:39:02'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:02:09'!
 buildNewClassNameSection
 
-	| maxLabelWidth newClassNameInput nameForNewClassLabel |
+	| maxLabelWidth  nameForNewClassLabel |
 	"self halt."
 	nameForNewClassLabel := self labelNameForNewClass..
 	maxLabelWidth := self recommendedWidthForLabels: (Array with: nameForNewClassLabel with: self labelVariableToAccessNewClass).
 	newClassNameModel := TextModel withText: (((Text fromString: 'NameOfNewClass') color: self colorForClassName) bold).
 
-	newClassNameInput := LabeledInput 
+	newClassNameLabeledInput := LabeledInput 
 					withLabel: nameForNewClassLabel
 					withLabelFixedWidth: maxLabelWidth
 					withModel: newClassNameModel
 					usingAs: self.
-	newClassNameInput emptyTextDisplayMessage: self labelPleaseProvideNewClassName.
-	self layoutMorph addMorph: newClassNameInput.
+	newClassNameLabeledInput emptyTextDisplayMessage: self labelPleaseProvideNewClassName.
+	self layoutMorph addMorph: newClassNameLabeledInput.
 	! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:40:42'!
@@ -287,31 +294,30 @@ buildSubmitButton
 	submitButton color: self acceptButtonColor.
 	^submitButton! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 23:01:57'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:04:12'!
 buildVariableToAccessNewClassSection
 
-	| maxLabelWidth variableNameInput variableToAccessNewClassLabel |
+	| maxLabelWidth  variableToAccessNewClassLabel |
 	variableToAccessNewClassLabel := self labelVariableToAccessNewClass.
 	maxLabelWidth := self recommendedWidthForLabels: (Array with: self labelNameForNewClass with: variableToAccessNewClassLabel).
 	
 	variableNameToAccessNewClassModel := TextModel withText: 'aNameOfVariable'.
 	variableNameToAccessNewClassModel actualContents color: self colorForInstVar .
-	variableNameInput := LabeledInput 
+	variableNameToAccessNewClassLabeledInput := LabeledInput 
 					withLabel: variableToAccessNewClassLabel
 					withLabelFixedWidth: maxLabelWidth
 					withModel: variableNameToAccessNewClassModel
 					usingAs: self.
 	
-	variableNameInput emptyTextDisplayMessage: self labelPleaseProvideNewInstVarName.
-	self layoutMorph addMorph: variableNameInput.
+	variableNameToAccessNewClassLabeledInput emptyTextDisplayMessage: self labelPleaseProvideNewInstVarName.
+	self layoutMorph addMorph: variableNameToAccessNewClassLabeledInput.
 	
 ! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 23:03:36'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:11:38'!
 buildinstanceVariableListSection
-	| list instanceVariablesToMoveTitle |
 	
-	list := PluggableListMorphOfMany
+	instanceVariableListSection := PluggableListMorphOfMany
 				model: self
 				listGetter: #instanceVariableList
 				primarySelectionGetter: #instanceVariableListIndex
@@ -322,12 +328,17 @@ buildinstanceVariableListSection
 				menuGetter: nil
 				keystrokeAction: nil.
 	
-	list color: Color white.
-	list layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: ExtractClassForm fontProportionalUnitOfReferenceForHeight * 7).
+	instanceVariableListSection color: Color white.
+	instanceVariableListSection layoutSpec: (LayoutSpec proportionalWidth: 1.0 fixedHeight: ExtractClassForm fontProportionalUnitOfReferenceForHeight * 7).
+	self layoutMorph addMorph: instanceVariableListSection.
+! !
+
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:13:08'!
+buildinstanceVariableListTitle
+	
 	instanceVariablesToMoveTitle := LabelMorph contents: self labelSelectInstVarToMove.
 	instanceVariablesToMoveTitle layoutSpec offAxisEdgeWeight: 0.0.
 	self layoutMorph addMorph: instanceVariablesToMoveTitle.
-	self layoutMorph addMorph: list.
 ! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
@@ -346,10 +357,35 @@ setConfigurationOnLayoutMorph
 	self layoutMorph color: self backgroundColor.
 	self layoutMorph axisEdgeWeight: #columnTop! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:40:18'!
 setExtents
-	| requiredExtent |
-	requiredExtent := 636.7669122572003@834.6393034159412.
+	| requiredExtent intialHeight intialWidth |
+	 
+	intialHeight := 
+	newClassNameLabeledInput layoutSpec fixedOrMinimumLayoutHeight
+	+ variableNameToAccessNewClassLabeledInput layoutSpec fixedOrMinimumLayoutHeight
+	+ instanceVariablesToMoveTitle layoutSpec fixedOrMinimumLayoutHeight
+	+ instanceVariableListSection layoutSpec fixedOrMinimumLayoutHeight
+	+ methodsToMoveTitle layoutSpec fixedOrMinimumLayoutHeight
+	+ messageSendingListSection layoutSpec fixedHeight
+	+ labelHasReferencesToVariables layoutSpec fixedOrMinimumLayoutHeight
+	+ buttonsSection layoutSpec fixedOrMinimumLayoutHeight
+	.
+	
+	intialWidth  := {
+	newClassNameLabeledInput layoutSpec fixedOrMinimumLayoutHeight.
+	variableNameToAccessNewClassLabeledInput layoutSpec fixedOrMinimumLayoutHeight.
+	instanceVariablesToMoveTitle layoutSpec fixedOrMinimumLayoutHeight.
+	instanceVariableListSection layoutSpec fixedOrMinimumLayoutHeight.
+	methodsToMoveTitle layoutSpec fixedOrMinimumLayoutHeight.
+	messageSendingListSection layoutSpec fixedHeight.
+	labelHasReferencesToVariables layoutSpec fixedOrMinimumLayoutHeight.
+	buttonsSection layoutSpec fixedOrMinimumLayoutHeight
+	} max.
+	"requiredExtent := 636.7669122572003@834.6393034159412."
+	"requiredExtent := 636.7669122572003@intialHeight."
+	self halt.
+	requiredExtent := intialWidth@intialHeight.
 	self layoutMorph morphExtent: requiredExtent.
 	"scrollPane scroller morphExtent: requiredExtent."! !
 
@@ -916,6 +952,41 @@ test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveA
 	^cbu' equals: (targetClass sourceCodeAt: #cbu_).
 	! !
 
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/7/2024 02:11:46'!
+test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveADifferentName2
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'cbu'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'cbu ^cbu.' .
+	sourceClass compile: 'cbu_ ^cbu.' .
+	sourceClass compile: 'cbuPlusOne ^cbu+1 .' .
+	methodsToExtract add: #cbu.
+	methodsToExtract add: #cbu_.
+	instVarsToExtract add: 'cbu'.
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aCbu' 
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := (Smalltalk classNamed: #TargetClass).
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'cbu
+	^aCbu cbu.' equals: (sourceClass sourceCodeAt: #cbu).
+	self assert: 'cbu_
+	^aCbu cbu_.' equals: (sourceClass sourceCodeAt: #cbu_).
+	self assert: 'cbuPlusOne ^aCbu cbu__+1 .' equals: (sourceClass sourceCodeAt: #cbuPlusOne).
+	self assert: 'cbu__
+	^cbu' equals: (targetClass sourceCodeAt: #cbu__).
+	! !
+
 !ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/3/2024 02:39:01'!
 test107GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenSettersShouldHaveADifferentName
 	
@@ -1063,6 +1134,15 @@ createNewClass
 		poolDictionaries: ''
 		category: sourceClass category! !
 
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/7/2024 02:14:34'!
+getterSelectorFor: anInstanceVariableToMove 
+	| getterCandidate |
+	
+	getterCandidate := anInstanceVariableToMove asSymbol.
+	[methodsToExtract includes: getterCandidate] whileTrue: [
+		getterCandidate := (getterCandidate copyFrom: 1 to: getterCandidate size), '_'.].
+	^getterCandidate.! !
+
 !ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 1/5/2024 01:23:51'!
 initializeNewObject
 	| newSourceInitialize |
@@ -1095,16 +1175,17 @@ method: setterCandidate isSetterOf: anInstVarName
 	scanner movePcForward.
 	^scanner nextByte = 16r7C! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/5/2024 02:09:15'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/7/2024 02:13:04'!
 moveInstanceVariables
 
 	| newGetter newSetter |
 	"self halt."
 	^ instVarsToExtract do: [ :anInstanceVariableToMove | 
 		
-		(methodsToExtract includes: anInstanceVariableToMove asSymbol) 
+		"(methodsToExtract includes: anInstanceVariableToMove asSymbol) 
 			ifTrue: [newGetter := (anInstanceVariableToMove, '_') asSymbol.]
-			ifFalse: [newGetter := anInstanceVariableToMove asSymbol].
+			ifFalse: [newGetter := anInstanceVariableToMove asSymbol]."
+		newGetter := self getterSelectorFor: anInstanceVariableToMove.
 		
 		newSetter := self setterSelectorFor: anInstanceVariableToMove.
 
