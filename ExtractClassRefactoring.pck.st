@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6169] on 8 February 2024 at 2:05:10 am'!
+'From Cuis6.3 [latest update: #6169] on 22 February 2024 at 1:58:28 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 22!
+!provides: 'ExtractClassRefactoring' 1 24!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -341,6 +341,32 @@ buildinstanceVariableListTitle
 	self layoutMorph addMorph: instanceVariablesToMoveTitle.
 ! !
 
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/10/2024 20:55:18'!
+initialHeight
+
+	^ newClassNameLabeledInput layoutSpec fixedOrMinimumLayoutHeight
+	+ variableNameToAccessNewClassLabeledInput layoutSpec fixedOrMinimumLayoutHeight
+	+ instanceVariablesToMoveTitle layoutSpec fixedOrMinimumLayoutHeight
+	+ instanceVariableListSection layoutSpec fixedOrMinimumLayoutHeight
+	+ methodsToMoveTitle layoutSpec fixedOrMinimumLayoutHeight
+	+ messageSendingListSection layoutSpec fixedHeight
+	+ labelHasReferencesToVariables layoutSpec fixedOrMinimumLayoutHeight
+	+ buttonsSection layoutSpec fixedOrMinimumLayoutHeight! !
+
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/10/2024 20:54:50'!
+initialWidth
+
+	^ {
+	newClassNameLabeledInput layoutSpec fixedOrMinimumLayoutHeight.
+	variableNameToAccessNewClassLabeledInput layoutSpec fixedOrMinimumLayoutHeight.
+	instanceVariablesToMoveTitle layoutSpec fixedOrMinimumLayoutHeight.
+	instanceVariableListSection layoutSpec fixedOrMinimumLayoutHeight.
+	methodsToMoveTitle layoutSpec fixedOrMinimumLayoutHeight.
+	messageSendingListSection layoutSpec fixedHeight.
+	labelHasReferencesToVariables layoutSpec fixedOrMinimumLayoutHeight.
+	buttonsSection layoutSpec fixedOrMinimumLayoutHeight
+	} max! !
+
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/5/2024 01:23:50'!
 recommendedWidthForLabels: labels
 
@@ -357,37 +383,18 @@ setConfigurationOnLayoutMorph
 	self layoutMorph color: self backgroundColor.
 	self layoutMorph axisEdgeWeight: #columnTop! !
 
-!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/8/2024 01:40:18'!
+!ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 2/10/2024 20:55:37'!
 setExtents
 	| requiredExtent intialHeight intialWidth |
 	 
-	intialHeight := 
-	newClassNameLabeledInput layoutSpec fixedOrMinimumLayoutHeight
-	+ variableNameToAccessNewClassLabeledInput layoutSpec fixedOrMinimumLayoutHeight
-	+ instanceVariablesToMoveTitle layoutSpec fixedOrMinimumLayoutHeight
-	+ instanceVariableListSection layoutSpec fixedOrMinimumLayoutHeight
-	+ methodsToMoveTitle layoutSpec fixedOrMinimumLayoutHeight
-	+ messageSendingListSection layoutSpec fixedHeight
-	+ labelHasReferencesToVariables layoutSpec fixedOrMinimumLayoutHeight
-	+ buttonsSection layoutSpec fixedOrMinimumLayoutHeight
-	.
-	
-	intialWidth  := {
-	newClassNameLabeledInput layoutSpec fixedOrMinimumLayoutHeight.
-	variableNameToAccessNewClassLabeledInput layoutSpec fixedOrMinimumLayoutHeight.
-	instanceVariablesToMoveTitle layoutSpec fixedOrMinimumLayoutHeight.
-	instanceVariableListSection layoutSpec fixedOrMinimumLayoutHeight.
-	methodsToMoveTitle layoutSpec fixedOrMinimumLayoutHeight.
-	messageSendingListSection layoutSpec fixedHeight.
-	labelHasReferencesToVariables layoutSpec fixedOrMinimumLayoutHeight.
-	buttonsSection layoutSpec fixedOrMinimumLayoutHeight
-	} max.
+	intialHeight := self initialHeight.
+	intialWidth  := self initialWidth.
 	"requiredExtent := 636.7669122572003@834.6393034159412."
 	"requiredExtent := 636.7669122572003@intialHeight."
-	self halt.
+	"self halt."
 	requiredExtent := intialWidth@intialHeight.
 	self layoutMorph morphExtent: requiredExtent.
-	"scrollPane scroller morphExtent: requiredExtent."! !
+	! !
 
 !ExtractClassForm methodsFor: 'GUI building' stamp: 'mc 1/17/2024 20:38:09'!
 setWindowTitle
@@ -660,8 +667,8 @@ test006variableToAccessNewClassShouldBeInLowercase
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldBeInLowercaseErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/19/2024 01:49:50'!
-test006variableToAccessNewClassShouldNotBeEmpty
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/17/2024 01:27:12'!
+test007variableToAccessNewClassShouldNotBeEmpty
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
 	targetClassName := #TargetClass.
@@ -680,8 +687,8 @@ test006variableToAccessNewClassShouldNotBeEmpty
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeEmptyErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test006variableToAccessNewClassShouldNotBeInUse
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/17/2024 01:27:36'!
+test008variableToAccessNewClassShouldNotBeInUse
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
 	targetClassName := #TargetClass.
@@ -694,8 +701,8 @@ test006variableToAccessNewClassShouldNotBeInUse
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeInUseErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test006variableToAccessNewClassShouldNotBeNil
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/17/2024 01:27:52'!
+test009variableToAccessNewClassShouldNotBeNil
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
 	targetClassName := #TargetClass.
@@ -733,8 +740,8 @@ test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	aTargetClass := TargetClass new.
 	super initialize.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test100_1extractClassShouldReuseInitialize
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:10'!
+test101ExtractClassShouldReuseInitialize
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -759,8 +766,8 @@ test100_1extractClassShouldReuseInitialize
 	aTargetClass := TargetClass new.
 	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test100_2extractClassShouldReuseInitialize
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:17'!
+test102ExtractClassShouldReuseInitialize
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -789,31 +796,8 @@ test100_2extractClassShouldReuseInitialize
 	tmpvar := 1.
 	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test101GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
-	
-	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
-	targetClassName := #TargetClass.
-	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
-	instVarsToExtract := OrderedCollection new.
-	methodsToExtract := OrderedCollection new.
-	instVarsToExtract add: 'iv1'.
-	
-	refactoring := ExtractClassRefactoring 
-						from: sourceClass
-						to: targetClassName
-						instanceVariableNamed: 'aTargetClass' 
-						instVarToExtract: instVarsToExtract
-						methodToExtract: methodsToExtract.
-	refactoring apply.
-	
-	targetClass := Smalltalk classNamed: #TargetClass.
-	self assert: [ targetClass notNil ].
-	self assert: 1 equals: targetClass instVarNames size.
-	self assert: 'iv1' equals: targetClass instVarNames first.! !
-
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test102GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/21/2024 00:29:04'!
+test103GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariablesShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -837,8 +821,8 @@ test102GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariabl
 	self assert: targetClass instVarNames includes: 'iv1'.
 	self assert: targetClass instVarNames includes: 'iv2'.! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test103GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:33'!
+test104GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -862,8 +846,31 @@ test103GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldB
 	self assert: targetClass instVarNames includes: 'iv1'.
 	self assert: 'm1 ^aTargetClass iv1+1.' equals: (sourceClass sourceCodeAt: #m1).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test104GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:42'!
+test105GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	instVarsToExtract add: 'iv1'.
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aTargetClass' 
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := Smalltalk classNamed: #TargetClass.
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'iv1' equals: targetClass instVarNames first.! !
+
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:48'!
+test106GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -889,8 +896,8 @@ test104GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	^aTargetClass m1: self.' equals: (sourceClass sourceCodeAt: #m1).
 	self assert: 'm1: aSourceClass ^aSourceClass iv1+1.' equals: (targetClass sourceCodeAt: #m1:).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
-test105Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:55'!
+test107Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -921,8 +928,8 @@ test105Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	^aTargetClass m2.' equals: (sourceClass sourceCodeAt: #m2).
 	self assert: 'm2 ^1.' equals: (targetClass sourceCodeAt: #m2).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/5/2024 02:07:27'!
-test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveADifferentName
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:16:35'!
+test108GivenAGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -945,15 +952,15 @@ test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveA
 	targetClass := (Smalltalk classNamed: #TargetClass).
 	self assert: [ targetClass notNil ].
 	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'cbu ^aCbu cbu.' equals: (sourceClass sourceCodeAt: #cbu).
+	self assert: 'cbuPlusOne ^aCbu cbu+1 .' equals: (sourceClass sourceCodeAt: #cbuPlusOne).
 	self assert: 'cbu
-	^aCbu cbu.' equals: (sourceClass sourceCodeAt: #cbu).
-	self assert: 'cbuPlusOne ^aCbu cbu_+1 .' equals: (sourceClass sourceCodeAt: #cbuPlusOne).
-	self assert: 'cbu_
-	^cbu' equals: (targetClass sourceCodeAt: #cbu_).
+	^cbu' equals: (targetClass sourceCodeAt: #cbu).
+
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/7/2024 02:11:46'!
-test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveADifferentName2
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:16:10'!
+test109GivenAGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -978,17 +985,54 @@ test106GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenGettersShouldHaveA
 	targetClass := (Smalltalk classNamed: #TargetClass).
 	self assert: [ targetClass notNil ].
 	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'cbu ^aCbu cbu.' equals: (sourceClass sourceCodeAt: #cbu).
+	self assert: 'cbu_
+	^aCbu cbu_.' equals: (sourceClass sourceCodeAt: #cbu_).
+	self assert: 'cbuPlusOne ^aCbu cbu+1 .' equals: (sourceClass sourceCodeAt: #cbuPlusOne).
+	self assert: 'cbu
+	^cbu' equals: (targetClass sourceCodeAt: #cbu).
+	! !
+
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:14:58'!
+test110GivenANonGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveUndescore
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'cbu'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'cbu ^1.' .
+	sourceClass compile: 'cbu_ ^cbu.' .
+	sourceClass compile: 'cbuPlusOne ^cbu+1 .' .
+	methodsToExtract add: #cbu.
+	methodsToExtract add: #cbu_.
+	instVarsToExtract add: 'cbu'.
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aCbu' 
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := (Smalltalk classNamed: #TargetClass).
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
 	self assert: 'cbu
 	^aCbu cbu.' equals: (sourceClass sourceCodeAt: #cbu).
 	self assert: 'cbu_
 	^aCbu cbu_.' equals: (sourceClass sourceCodeAt: #cbu_).
 	self assert: 'cbuPlusOne ^aCbu cbu__+1 .' equals: (sourceClass sourceCodeAt: #cbuPlusOne).
+	self assert: 'cbu ^1.' equals: (targetClass sourceCodeAt: #cbu).
+	self assert: 'cbu_ ^self cbu__.' equals: (targetClass sourceCodeAt: #cbu_).
 	self assert: 'cbu__
 	^cbu' equals: (targetClass sourceCodeAt: #cbu__).
+	
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/3/2024 02:39:01'!
-test107GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenSettersShouldHaveADifferentName
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/21/2024 01:04:48'!
+test111GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -1013,53 +1057,16 @@ test107GivenAMethodsAndInstvarWithSameNameWhenExtractClassThenSettersShouldHaveA
 	targetClass := (Smalltalk classNamed: #TargetClass).
 	self assert: [ targetClass notNil ].
 	self assert: 1 equals: targetClass instVarNames size.
-	self assert: 'counter: anInt
-	^aCounter counter: anInt.' equals: (sourceClass sourceCodeAt: #counter:).
+	self assert: 'counter: anInt ^aCounter counter: anInt.' equals: (sourceClass sourceCodeAt: #counter:).
 	self assert: 'counterReset
-	aCounter counter_: 1.
+	aCounter counter: 1.
 	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
-	self assert: 'counter_: anObject
-	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter_:).
+	self assert: 'counter: anObject
+	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter:).
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/4/2024 02:27:14'!
-test108GivenASetterAndInstvarWithSameNameWhenExtractClassThenSettersShouldBeReused
-	
-	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
-	targetClassName := #TargetClass.
-	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
-	instVarsToExtract := OrderedCollection new.
-	methodsToExtract := OrderedCollection new.
-	sourceClass compile: 'counter: anInt ^counter := anInt.' .
-	sourceClass compile: 'counterReset
-	counter := 1.
-	^counter' .
-	methodsToExtract add: #counter:.
-	instVarsToExtract add: 'counter'.
-	
-	refactoring := ExtractClassRefactoring 
-						from: sourceClass
-						to: targetClassName
-						instanceVariableNamed: 'aCounter' 
-						instVarToExtract: instVarsToExtract
-						methodToExtract: methodsToExtract.
-	refactoring apply.
-	
-	targetClass := (Smalltalk classNamed: #TargetClass).
-	self assert: [ targetClass notNil ].
-	self assert: 1 equals: targetClass instVarNames size.
-	self assert: 'counter: anInt
-	^aCounter counter: anInt.' equals: (sourceClass sourceCodeAt: #counter:).
-	self assert: 'counterReset
-	aCounter counter_: 1.
-	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
-	self assert: 'counter: anInt ^self counter_: anInt.' equals: (targetClass sourceCodeAt: #counter:).
-	self assert: 'counter_: anObject
-	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter_:).
-	! !
-
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/4/2024 03:10:07'!
-test109GivenASetterAndInstvarWithSameNameWhenExtractClassThenSettersShouldBeReused
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/21/2024 01:12:08'!
+test112GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -1086,6 +1093,46 @@ test109GivenASetterAndInstvarWithSameNameWhenExtractClassThenSettersShouldBeReus
 	targetClass := (Smalltalk classNamed: #TargetClass).
 	self assert: [ targetClass notNil ].
 	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'counter: anInt ^aCounter counter: anInt.' equals: (sourceClass sourceCodeAt: #counter:).
+	self assert: 'counter_: anInt
+	^aCounter counter_: anInt.' equals: (sourceClass sourceCodeAt: #counter_:).
+	self assert: 'counterReset
+	aCounter counter: 1.
+	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
+	self assert: 'counter: anObject
+	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter:).
+	self assert: 'counter_: anInt ^self counter: anInt.' equals: (targetClass sourceCodeAt: #counter_:).
+
+	! !
+
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:22:27'!
+test113GivenANonSetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveUndescore
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'counter: anInt ^1.' .
+	sourceClass compile: 'counter_: anInt ^2.' .
+	sourceClass compile: 'counterReset
+	counter := 1.
+	^counter' .
+	methodsToExtract add: #counter:.
+	methodsToExtract add: #counter_:.
+	instVarsToExtract add: 'counter'.
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aCounter' 
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := (Smalltalk classNamed: #TargetClass).
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
 	self assert: 'counter: anInt
 	^aCounter counter: anInt.' equals: (sourceClass sourceCodeAt: #counter:).
 	self assert: 'counter_: anInt
@@ -1093,10 +1140,11 @@ test109GivenASetterAndInstvarWithSameNameWhenExtractClassThenSettersShouldBeReus
 	self assert: 'counterReset
 	aCounter counter__: 1.
 	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
-	self assert: 'counter: anInt ^self counter__: anInt.' equals: (targetClass sourceCodeAt: #counter:).
-	self assert: 'counter_: anInt ^self counter__: anInt.' equals: (targetClass sourceCodeAt: #counter_:).
+	self assert: 'counter: anInt ^1.' equals: (targetClass sourceCodeAt: #counter:).
+	self assert: 'counter_: anInt ^2.' equals: (targetClass sourceCodeAt: #counter_:).
 	self assert: 'counter__: anObject
 	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter__:).
+
 	! !
 
 !ExtractClassRefactoring methodsFor: 'initialization' stamp: 'mc 1/5/2024 01:23:51'!
@@ -1108,7 +1156,7 @@ initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anI
 	variableToAccessToNewClass := anInstanceVariableNameForSourceClass.
 	! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 1/5/2024 01:23:50'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 2/9/2024 10:03:41'!
 apply
 	
 	self 
@@ -1134,11 +1182,15 @@ createNewClass
 		poolDictionaries: ''
 		category: sourceClass category! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/7/2024 02:14:34'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/13/2024 02:29:25'!
 getterSelectorFor: anInstanceVariableToMove 
 	| getterCandidate |
 	
 	getterCandidate := anInstanceVariableToMove asSymbol.
+	
+	((methodsToExtract includes: getterCandidate) and: [(sourceClass compiledMethodAt: getterCandidate) isGetterOf: anInstanceVariableToMove at: (sourceClass allInstVarNames indexOf: anInstanceVariableToMove)])
+		ifTrue: [methodsToExtract remove: getterCandidate ].
+	
 	[methodsToExtract includes: getterCandidate] whileTrue: [
 		getterCandidate := (getterCandidate copyFrom: 1 to: getterCandidate size), '_'.].
 	^getterCandidate.! !
@@ -1233,11 +1285,13 @@ newSourceCodeForInitializeWhenExists: initializeCompiledMethod
 	newSourceInitialize := newSourceInitialize, (originalSourceInitialize copyFrom: (rangesForTmpVars last + 1) to: originalSourceInitialize size).
 	^newSourceInitialize! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/4/2024 03:08:46'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/13/2024 02:28:50'!
 setterSelectorFor: anInstanceVariableToMove 
 	| setterCandidate |
-	
 	setterCandidate := (anInstanceVariableToMove, ':') asSymbol .
+	((methodsToExtract includes: setterCandidate) and: [self method: (sourceClass compiledMethodAt: setterCandidate) isSetterOf: anInstanceVariableToMove])
+		ifTrue: [methodsToExtract remove: setterCandidate ].
+	
 	[methodsToExtract includes: setterCandidate] whileTrue: [
 		setterCandidate := (setterCandidate copyFrom: 1 to: setterCandidate size -1), '_:'.].
 	^setterCandidate.! !
