@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6169] on 22 February 2024 at 1:58:28 am'!
+'From Cuis6.3 [latest update: #6169] on 23 February 2024 at 8:07:01 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 24!
+!provides: 'ExtractClassRefactoring' 1 25!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -1182,14 +1182,17 @@ createNewClass
 		poolDictionaries: ''
 		category: sourceClass category! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/13/2024 02:29:25'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 01:34:52'!
+dontMoveMethod: selectorToMove
+
+	^ methodsToExtract remove: selectorToMove! !
+
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 02:27:52'!
 getterSelectorFor: anInstanceVariableToMove 
 	| getterCandidate |
-	
 	getterCandidate := anInstanceVariableToMove asSymbol.
-	
-	((methodsToExtract includes: getterCandidate) and: [(sourceClass compiledMethodAt: getterCandidate) isGetterOf: anInstanceVariableToMove at: (sourceClass allInstVarNames indexOf: anInstanceVariableToMove)])
-		ifTrue: [methodsToExtract remove: getterCandidate ].
+	(self isGoingToMove: getterCandidate andIsGetterOf: anInstanceVariableToMove)
+		ifTrue: [self dontMoveMethod: getterCandidate ].
 	
 	[methodsToExtract includes: getterCandidate] whileTrue: [
 		getterCandidate := (getterCandidate copyFrom: 1 to: getterCandidate size), '_'.].
@@ -1208,6 +1211,16 @@ initializeNewObject
 			newSourceInitialize := newSourceInitialize, String newLineString, String tab, 'super initialize.'.
 			].
 	sourceClass compile: newSourceInitialize! !
+
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 02:27:04'!
+isGoingToMove: getterCandidate andIsGetterOf: anInstanceVariableToMove
+
+	^ (methodsToExtract includes: getterCandidate) and: [(sourceClass compiledMethodAt: getterCandidate) isGetterOf: anInstanceVariableToMove at: (sourceClass allInstVarNames indexOf: anInstanceVariableToMove)]! !
+
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 01:37:49'!
+isGoingToMove: setterCandidate andIsSetterOf: anInstanceVariableToMove
+
+	^ (methodsToExtract includes: setterCandidate) and: [self method: (sourceClass compiledMethodAt: setterCandidate) isSetterOf: anInstanceVariableToMove]! !
 
 !ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 1/21/2024 07:06:21'!
 method: setterCandidate isSetterOf: anInstVarName 
@@ -1285,12 +1298,12 @@ newSourceCodeForInitializeWhenExists: initializeCompiledMethod
 	newSourceInitialize := newSourceInitialize, (originalSourceInitialize copyFrom: (rangesForTmpVars last + 1) to: originalSourceInitialize size).
 	^newSourceInitialize! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/13/2024 02:28:50'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 01:37:49'!
 setterSelectorFor: anInstanceVariableToMove 
 	| setterCandidate |
 	setterCandidate := (anInstanceVariableToMove, ':') asSymbol .
-	((methodsToExtract includes: setterCandidate) and: [self method: (sourceClass compiledMethodAt: setterCandidate) isSetterOf: anInstanceVariableToMove])
-		ifTrue: [methodsToExtract remove: setterCandidate ].
+	(self isGoingToMove: setterCandidate andIsSetterOf: anInstanceVariableToMove)
+		ifTrue: [self dontMoveMethod: setterCandidate ].
 	
 	[methodsToExtract includes: setterCandidate] whileTrue: [
 		setterCandidate := (setterCandidate copyFrom: 1 to: setterCandidate size -1), '_:'.].
