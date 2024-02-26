@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6169] on 23 February 2024 at 8:07:01 pm'!
+'From Cuis6.3 [latest update: #6231] on 25 February 2024 at 11:56:18 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 25!
+!provides: 'ExtractClassRefactoring' 1 27!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -600,7 +600,7 @@ test002InstanceVariableToExtractShouldExists
 		failsWith: [ExtractClassRefactoring instanceVariable: 'iv1' shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/23/2024 20:10:45'!
 test003InstanceVariableToExtractShouldExists
 	
 	| targetClassName sourceClass instVarToExtract |
@@ -609,7 +609,6 @@ test003InstanceVariableToExtractShouldExists
 	instVarToExtract := OrderedCollection new.
 	instVarToExtract add: 'iv1'.
 	instVarToExtract add: 'iv2'.
-	
 	
 	self
 		assertCreation: [ExtractClassRefactoring from: sourceClass to: targetClassName instanceVariableNamed: 'aTargetClass' instVarToExtract: instVarToExtract methodToExtract: OrderedCollection new ] 
@@ -1031,7 +1030,7 @@ test110GivenANonGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHave
 	
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/21/2024 01:04:48'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/25/2024 23:48:21'!
 test111GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -1105,8 +1104,42 @@ test112GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSam
 
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:22:27'!
-test113GivenANonSetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveUndescore
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/25/2024 23:53:49'!
+test113GivenASetterWhichDoesntReturnAssigmentAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSameName
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'counter: anInt counter := anInt.' .
+	sourceClass compile: 'counterReset
+	counter := 1.
+	^counter' .
+	methodsToExtract add: #counter:.
+	instVarsToExtract add: 'counter'.
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aCounter' 
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := (Smalltalk classNamed: #TargetClass).
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'counter: anInt aCounter counter: anInt.' equals: (sourceClass sourceCodeAt: #counter:).
+	self assert: 'counterReset
+	aCounter counter: 1.
+	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
+	self assert: 'counter: anObject
+	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter:).
+	! !
+
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/25/2024 23:53:57'!
+test114GivenANonSetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveUndescore
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
@@ -1217,12 +1250,13 @@ isGoingToMove: getterCandidate andIsGetterOf: anInstanceVariableToMove
 
 	^ (methodsToExtract includes: getterCandidate) and: [(sourceClass compiledMethodAt: getterCandidate) isGetterOf: anInstanceVariableToMove at: (sourceClass allInstVarNames indexOf: anInstanceVariableToMove)]! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 01:37:49'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/24/2024 02:09:25'!
 isGoingToMove: setterCandidate andIsSetterOf: anInstanceVariableToMove
 
-	^ (methodsToExtract includes: setterCandidate) and: [self method: (sourceClass compiledMethodAt: setterCandidate) isSetterOf: anInstanceVariableToMove]! !
+	^(methodsToExtract includes: setterCandidate) 
+	and: [self method: (sourceClass compiledMethodAt: setterCandidate) isSetterOf: anInstanceVariableToMove]! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 1/21/2024 07:06:21'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/25/2024 23:52:19'!
 method: setterCandidate isSetterOf: anInstVarName 
 	| anInstVarIndex varIndexCode scanner |
 
@@ -1238,7 +1272,7 @@ method: setterCandidate isSetterOf: anInstVarName
 	scanner movePcForward.
 	(setterCandidate writesFieldCode: varIndexCode with: scanner nextByte using: scanner) ifFalse: [ ^false ].
 	scanner movePcForward.
-	^scanner nextByte = 16r7C! !
+	^scanner nextByte = 16r7C or: [scanner nextByte = 16r78]! !
 
 !ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/7/2024 02:13:04'!
 moveInstanceVariables
