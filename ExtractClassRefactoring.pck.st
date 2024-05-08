@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6231] on 25 February 2024 at 11:56:18 pm'!
+'From Cuis6.3 [latest update: #6169] on 8 May 2024 at 1:15:05 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 27!
+!provides: 'ExtractClassRefactoring' 1 28!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -630,12 +630,12 @@ test004methodToExtractShouldExists
 		failsWith: [ExtractClassRefactoring selector: #m1 shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
+!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 5/8/2024 01:00:38'!
 test005methodToExtractShouldExists
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
 	targetClassName := #TargetClass.
-	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
+	sourceClass := self createClassNamed: #SourceClass2 instanceVariableNames: 'iv1'.
 	sourceClass compile: 'm1 ^self.' .
 	instVarsToExtract := OrderedCollection new.
 	methodsToExtract := OrderedCollection new.
@@ -644,7 +644,7 @@ test005methodToExtractShouldExists
 	
 	self
 		assertCreation: [ ExtractClassRefactoring from: sourceClass to: targetClassName instanceVariableNamed: 'aTargetClass' instVarToExtract: instVarsToExtract methodToExtract: methodsToExtract ] 
-		failsWith: [ExtractClassRefactoring selector: #m2 shouldExistsOn: 'SourceClass'].
+		failsWith: [ExtractClassRefactoring selector: #m2 shouldExistsOn: 'SourceClass2'].
 	! !
 
 !ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/20/2024 01:46:48'!
@@ -1343,7 +1343,7 @@ setterSelectorFor: anInstanceVariableToMove
 		setterCandidate := (setterCandidate copyFrom: 1 to: setterCandidate size -1), '_:'.].
 	^setterCandidate.! !
 
-!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 1/20/2024 01:48:29'!
+!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 5/8/2024 01:02:22'!
 from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  
 	
 	Smalltalk
@@ -1354,7 +1354,7 @@ from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableN
 	targetClassName first isUppercase ifFalse: [ self refactoringError: self targetClassShouldStartWithUppercaseErrorMessage ].
 	(sourceClass instVarNames includesAllOf: instVarToExtract) ifFalse: [ self refactoringError: (self instanceVariable: ((instVarToExtract difference: sourceClass instVarNames) first) shouldExistsOn: sourceClass name) ].
 	
-	(sourceClass selectors includesAllOf: methodsToExtract) ifFalse: [self refactoringError: ( self selector: ((methodsToExtract difference: sourceClass selectors) first) shouldExistsOn: 'SourceClass' )].
+	(sourceClass selectors includesAllOf: methodsToExtract) ifFalse: [self refactoringError: ( self selector: ((methodsToExtract difference: sourceClass selectors) first) shouldExistsOn: sourceClass name )].
 	"self refactoringError: (self selector: methodsToExtract first shouldExistsOn: sourceClass name)."
 	anInstanceVariableNameForSourceClass ifNil: [self refactoringError: self variableToAccessNewClassShouldNotBeNilErrorMessage].
 	anInstanceVariableNameForSourceClass ifEmpty: [ self refactoringError: self variableToAccessNewClassShouldNotBeEmptyErrorMessage ].
