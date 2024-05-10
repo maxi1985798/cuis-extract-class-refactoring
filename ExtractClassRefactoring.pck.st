@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6169] on 8 May 2024 at 1:15:05 am'!
+'From Cuis6.3 [latest update: #6169] on 9 May 2024 at 11:27:00 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 28!
+!provides: 'ExtractClassRefactoring' 1 29!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -533,7 +533,7 @@ withModel: aModel
 
 	^self new initializeWithModel: aModel! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/19/2024 01:45:47'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 1/19/2024 01:45:47'!
 test001TargetClassNameShouldNotBeEmpty
 	
 	| targetClassName instVarToExtract sourceClass |
@@ -552,7 +552,7 @@ test001TargetClassNameShouldNotBeEmpty
 		failsWith: [ExtractClassRefactoring targetClassShouldNotBeEmptyErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/19/2024 23:09:42'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 1/19/2024 23:09:42'!
 test001TargetClassNameShouldStartWithUppercase
 	
 	| targetClassName instVarToExtract sourceClass |
@@ -571,7 +571,7 @@ test001TargetClassNameShouldStartWithUppercase
 		failsWith: [ExtractClassRefactoring targetClassShouldStartWithUppercaseErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 1/5/2024 01:23:51'!
 test001TargetClassShouldNotExist
 	
 	| targetClassName instVarToExtract sourceClass |
@@ -585,7 +585,7 @@ test001TargetClassShouldNotExist
 		failsWith: [ExtractClassRefactoring targetClassShouldNotExistsErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 1/5/2024 01:23:51'!
 test002InstanceVariableToExtractShouldExists
 	
 	| targetClassName sourceClass instVarToExtract |
@@ -600,7 +600,7 @@ test002InstanceVariableToExtractShouldExists
 		failsWith: [ExtractClassRefactoring instanceVariable: 'iv1' shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/23/2024 20:10:45'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 2/23/2024 20:10:45'!
 test003InstanceVariableToExtractShouldExists
 	
 	| targetClassName sourceClass instVarToExtract |
@@ -615,7 +615,7 @@ test003InstanceVariableToExtractShouldExists
 		failsWith: [ExtractClassRefactoring instanceVariable: 'iv2' shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 1/5/2024 01:23:51'!
 test004methodToExtractShouldExists
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -630,7 +630,7 @@ test004methodToExtractShouldExists
 		failsWith: [ExtractClassRefactoring selector: #m1 shouldExistsOn: 'SourceClass'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 5/8/2024 01:00:38'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 5/8/2024 01:00:38'!
 test005methodToExtractShouldExists
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -647,7 +647,7 @@ test005methodToExtractShouldExists
 		failsWith: [ExtractClassRefactoring selector: #m2 shouldExistsOn: 'SourceClass2'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/20/2024 01:46:48'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 1/20/2024 01:46:48'!
 test006variableToAccessNewClassShouldBeInLowercase
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -666,7 +666,7 @@ test006variableToAccessNewClassShouldBeInLowercase
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldBeInLowercaseErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/17/2024 01:27:12'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 2/17/2024 01:27:12'!
 test007variableToAccessNewClassShouldNotBeEmpty
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -686,7 +686,7 @@ test007variableToAccessNewClassShouldNotBeEmpty
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeEmptyErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/17/2024 01:27:36'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 2/17/2024 01:27:36'!
 test008variableToAccessNewClassShouldNotBeInUse
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -700,7 +700,7 @@ test008variableToAccessNewClassShouldNotBeInUse
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeInUseErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/17/2024 01:27:52'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 2/17/2024 01:27:52'!
 test009variableToAccessNewClassShouldNotBeNil
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -714,7 +714,7 @@ test009variableToAccessNewClassShouldNotBeNil
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeNilErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 1/5/2024 01:23:51'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 1/5/2024 01:23:51'!
 test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -739,7 +739,7 @@ test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	aTargetClass := TargetClass new.
 	super initialize.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:10'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/18/2024 02:08:10'!
 test101ExtractClassShouldReuseInitialize
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -765,7 +765,7 @@ test101ExtractClassShouldReuseInitialize
 	aTargetClass := TargetClass new.
 	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:17'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/18/2024 02:08:17'!
 test102ExtractClassShouldReuseInitialize
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -795,7 +795,7 @@ test102ExtractClassShouldReuseInitialize
 	tmpvar := 1.
 	^self.' equals: (sourceClass sourceCodeAt: #initialize).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/21/2024 00:29:04'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/21/2024 00:29:04'!
 test103GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariablesShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -820,7 +820,7 @@ test103GivenSourceClassAndTwoInstanceVariableWhenExtractClassThenInstanceVariabl
 	self assert: targetClass instVarNames includes: 'iv1'.
 	self assert: targetClass instVarNames includes: 'iv2'.! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:33'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/18/2024 02:08:33'!
 test104GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -845,7 +845,7 @@ test104GivenMethodAndInstanceVariableWhenExtractClassThenInstanceVariableShouldB
 	self assert: targetClass instVarNames includes: 'iv1'.
 	self assert: 'm1 ^aTargetClass iv1+1.' equals: (sourceClass sourceCodeAt: #m1).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:42'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/18/2024 02:08:42'!
 test105GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariableShouldBeInTargetClass
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -868,7 +868,7 @@ test105GivenSourceClassAndOneInstanceVariableWhenExtractClassThenInstanceVariabl
 	self assert: 1 equals: targetClass instVarNames size.
 	self assert: 'iv1' equals: targetClass instVarNames first.! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:48'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/18/2024 02:08:48'!
 test106GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -895,7 +895,7 @@ test106GivenMethodWhenExtractClassThenMoveMethodShouldBePerformed
 	^aTargetClass m1: self.' equals: (sourceClass sourceCodeAt: #m1).
 	self assert: 'm1: aSourceClass ^aSourceClass iv1+1.' equals: (targetClass sourceCodeAt: #m1:).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/18/2024 02:08:55'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/18/2024 02:08:55'!
 test107Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -927,7 +927,7 @@ test107Given2MethodsWhenExtractClassThenMoveMethodShouldBePerformed
 	^aTargetClass m2.' equals: (sourceClass sourceCodeAt: #m2).
 	self assert: 'm2 ^1.' equals: (targetClass sourceCodeAt: #m2).! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:16:35'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/22/2024 00:16:35'!
 test108GivenAGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -958,7 +958,7 @@ test108GivenAGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveSam
 
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:16:10'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/22/2024 00:16:10'!
 test109GivenAGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -992,7 +992,7 @@ test109GivenAGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveSam
 	^cbu' equals: (targetClass sourceCodeAt: #cbu).
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/22/2024 00:14:58'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/22/2024 00:14:58'!
 test110GivenANonGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHaveUndescore
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -1030,7 +1030,7 @@ test110GivenANonGetterAndInstvarWithSameNameWhenExtractClassThenGetterShouldHave
 	
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/25/2024 23:48:21'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/25/2024 23:48:21'!
 test111GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -1064,7 +1064,7 @@ test111GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSam
 	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter:).
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/21/2024 01:12:08'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/21/2024 01:12:08'!
 test112GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -1104,7 +1104,7 @@ test112GivenASetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSam
 
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/25/2024 23:53:49'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/25/2024 23:53:49'!
 test113GivenASetterWhichDoesntReturnAssigmentAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveSameName
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
@@ -1138,7 +1138,7 @@ test113GivenASetterWhichDoesntReturnAssigmentAndInstvarWithSameNameWhenExtractCl
 	^counter := anObject.' equals: (targetClass sourceCodeAt: #counter:).
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'as yet unclassified' stamp: 'mc 2/25/2024 23:53:57'!
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 2/25/2024 23:53:57'!
 test114GivenANonSetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHaveUndescore
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
