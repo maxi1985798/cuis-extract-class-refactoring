@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6350] on 21 July 2024 at 3:22:03 am'!
+'From Cuis6.3 [latest update: #6350] on 22 July 2024 at 2:13:44 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 30!
+!provides: 'ExtractClassRefactoring' 1 31!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -739,6 +739,31 @@ test010InstVarToCreateShouldntBeAsTmpInOneMethod
 		failsWith: [ExtractClassRefactoring variable: 'aCounter' alreadyExistsOnMethod: 'm1'].
 	! !
 
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 7/21/2024 15:24:16'!
+test011InstVarToCreateShouldntBeAsTmpInOneMethod
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'm1 |aCounter2| ^aCounter2 := 1' .
+	sourceClass compile: 'counterReset
+	counter := 1.
+	^counter' .
+	methodsToExtract add: #counterReset.
+	instVarsToExtract add: 'counter'.
+	
+	self
+		assertCreation: [ ExtractClassRefactoring 
+							from: sourceClass
+							to: targetClassName
+							instanceVariableNamed: 'aCounter2' 
+							instVarToExtract: instVarsToExtract
+							methodToExtract: methodsToExtract. ] 
+		failsWith: [ExtractClassRefactoring variable: 'aCounter2' alreadyExistsOnMethod: 'm1'].
+	! !
+
 !ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 1/5/2024 01:23:51'!
 test100extractClassWithNoVariablesAndNoMethodShouldOnlyCreateClass
 	
@@ -1368,9 +1393,9 @@ setterSelectorFor: anInstanceVariableToMove
 		setterCandidate := (setterCandidate copyFrom: 1 to: setterCandidate size -1), '_:'.].
 	^setterCandidate.! !
 
-!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 7/21/2024 01:57:26'!
+!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 7/22/2024 02:12:04'!
 from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  
-	sourceClass selectorsDo: [:sel | (sourceClass>>sel hasArgumentOrTemporaryNamed: anInstanceVariableNameForSourceClass) ifTrue: [self refactoringError: (self variable: 'aCounter' alreadyExistsOnMethod: 'm1')]].
+	
 	Smalltalk
 		at: targetClassName 
 		ifPresent: [ :actualClass | self refactoringError: self targetClassShouldNotExistsErrorMessage. ]
@@ -1384,6 +1409,7 @@ from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableN
 	anInstanceVariableNameForSourceClass ifNil: [self refactoringError: self variableToAccessNewClassShouldNotBeNilErrorMessage].
 	anInstanceVariableNameForSourceClass ifEmpty: [ self refactoringError: self variableToAccessNewClassShouldNotBeEmptyErrorMessage ].
 	anInstanceVariableNameForSourceClass first isLowercase ifFalse: [ self refactoringError: self variableToAccessNewClassShouldBeInLowercaseErrorMessage ].
+	sourceClass selectorsDo: [:sel | (sourceClass>>sel hasArgumentOrTemporaryNamed: anInstanceVariableNameForSourceClass) ifTrue: [self refactoringError: (self variable: anInstanceVariableNameForSourceClass alreadyExistsOnMethod: sel)]].
 	(sourceClass instVarNames includes: anInstanceVariableNameForSourceClass  ) ifTrue: [self refactoringError: self variableToAccessNewClassShouldNotBeInUseErrorMessage].
 	
 	^self new initializeFrom: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  ! !
@@ -1412,9 +1438,9 @@ targetClassShouldNotExistsErrorMessage
 targetClassShouldStartWithUppercaseErrorMessage
 	^'Target class should start with uppercase'! !
 
-!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 7/21/2024 01:59:00'!
+!ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 7/21/2024 15:28:53'!
 variable: instVarName alreadyExistsOnMethod: aSelector 
-	^instVarName, ' already exists on method ', aSelector ! !
+	^'Variable name ', instVarName, ' already exists on method ', aSelector ! !
 
 !ExtractClassRefactoring class methodsFor: 'message handling' stamp: 'mc 1/20/2024 01:49:24'!
 variableToAccessNewClassShouldBeInLowercaseErrorMessage
