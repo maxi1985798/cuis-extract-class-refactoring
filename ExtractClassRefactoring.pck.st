@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6350] on 22 July 2024 at 2:13:44 am'!
+'From Cuis6.3 [latest update: #6350] on 27 July 2024 at 8:14:26 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 31!
+!provides: 'ExtractClassRefactoring' 1 32!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -714,7 +714,7 @@ test009variableToAccessNewClassShouldNotBeNil
 		failsWith: [ExtractClassRefactoring variableToAccessNewClassShouldNotBeNilErrorMessage].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 7/20/2024 19:53:41'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 7/24/2024 01:34:47'!
 test010InstVarToCreateShouldntBeAsTmpInOneMethod
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -723,6 +723,7 @@ test010InstVarToCreateShouldntBeAsTmpInOneMethod
 	instVarsToExtract := OrderedCollection new.
 	methodsToExtract := OrderedCollection new.
 	sourceClass compile: 'm1 |aCounter| ^aCounter := 1' .
+	sourceClass compile: 'm2 |aCounter| ^aCounter := 1' .
 	sourceClass compile: 'counterReset
 	counter := 1.
 	^counter' .
@@ -736,10 +737,10 @@ test010InstVarToCreateShouldntBeAsTmpInOneMethod
 							instanceVariableNamed: 'aCounter' 
 							instVarToExtract: instVarsToExtract
 							methodToExtract: methodsToExtract. ] 
-		failsWith: [ExtractClassRefactoring variable: 'aCounter' alreadyExistsOnMethod: 'm1'].
+		failsWith: [ExtractClassRefactoring variable: 'aCounter' alreadyExistsOnMethod: 'm2'].
 	! !
 
-!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 7/21/2024 15:24:16'!
+!ExtractClassRefactoringTest methodsFor: 'validation' stamp: 'mc 7/24/2024 01:34:53'!
 test011InstVarToCreateShouldntBeAsTmpInOneMethod
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract |
@@ -748,6 +749,7 @@ test011InstVarToCreateShouldntBeAsTmpInOneMethod
 	instVarsToExtract := OrderedCollection new.
 	methodsToExtract := OrderedCollection new.
 	sourceClass compile: 'm1 |aCounter2| ^aCounter2 := 1' .
+	sourceClass compile: 'm2 |aCounter2| ^aCounter2 := 1' .
 	sourceClass compile: 'counterReset
 	counter := 1.
 	^counter' .
@@ -761,7 +763,7 @@ test011InstVarToCreateShouldntBeAsTmpInOneMethod
 							instanceVariableNamed: 'aCounter2' 
 							instVarToExtract: instVarsToExtract
 							methodToExtract: methodsToExtract. ] 
-		failsWith: [ExtractClassRefactoring variable: 'aCounter2' alreadyExistsOnMethod: 'm1'].
+		failsWith: [ExtractClassRefactoring variable: 'aCounter2' alreadyExistsOnMethod: 'm2'].
 	! !
 
 !ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 1/5/2024 01:23:51'!
@@ -1230,6 +1232,102 @@ test114GivenANonSetterAndInstvarWithSameNameWhenExtractClassThenSetterShouldHave
 
 	! !
 
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 7/27/2024 02:53:56'!
+test115InstVarToCreateCanBeAsTmpInOneMethodButThatMethodShouldBeMoved
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'm1 |aCounter| ^aCounter := 1.' .
+	sourceClass compile: 'counterReset
+	counter := 1.
+	^counter' .
+	methodsToExtract add: #m1.
+	instVarsToExtract add: 'counter'.
+	
+	refactoring := ExtractClassRefactoring 
+							from: sourceClass
+							to: targetClassName
+							instanceVariableNamed: 'aCounter'
+							instVarToExtract: instVarsToExtract
+							methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := (Smalltalk classNamed: #TargetClass).
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'm1 |aCounter_| ^aCounter_ := 1.' equals: (targetClass sourceCodeAt: #m1).
+	self assert: 'counterReset
+	aCounter counter: 1.
+	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
+! !
+
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 7/27/2024 03:08:47'!
+test116InstVarToCreateCanBeAsTmpInOneMethodButThatMethodShouldBeMoved
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'm1 |aaTmp aCounter| ^aCounter := 1.' .
+	sourceClass compile: 'counterReset
+	counter := 1.
+	^counter' .
+	methodsToExtract add: #m1.
+	instVarsToExtract add: 'counter'.
+	
+	refactoring := ExtractClassRefactoring 
+							from: sourceClass
+							to: targetClassName
+							instanceVariableNamed: 'aCounter'
+							instVarToExtract: instVarsToExtract
+							methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := (Smalltalk classNamed: #TargetClass).
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'm1 |aaTmp aCounter_| ^aCounter_ := 1.' equals: (targetClass sourceCodeAt: #m1).
+	self assert: 'counterReset
+	aCounter counter: 1.
+	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
+! !
+
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 7/27/2024 19:43:38'!
+ttttest117InstVarToCreateCanBeAsTmpInOneMethodButThatMethodShouldBeMoved
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'm1: aSourceClass |aaTmp | 1.' .
+	sourceClass compile: 'counterReset
+	counter := 1.
+	^counter' .
+	methodsToExtract add: #m1:.
+	instVarsToExtract add: 'counter'.
+	
+	refactoring := ExtractClassRefactoring 
+							from: sourceClass
+							to: targetClassName
+							instanceVariableNamed: 'aCounter'
+							instVarToExtract: instVarsToExtract
+							methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := (Smalltalk classNamed: #TargetClass).
+	self assert: [ targetClass notNil ].
+	self assert: 1 equals: targetClass instVarNames size.
+	self assert: 'm1 |aaTmp aCounter_| ^aCounter_ := 1.' equals: (targetClass sourceCodeAt: #m1).
+	self assert: 'counterReset
+	aCounter counter: 1.
+	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
+! !
+
 !ExtractClassRefactoring methodsFor: 'initialization' stamp: 'mc 1/5/2024 01:23:51'!
 initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: collectionOfInstVarsToExtract methodToExtract: collectionOfMethodsToExtract  
 	sourceClass := aSourceClassName.
@@ -1239,10 +1337,11 @@ initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anI
 	variableToAccessToNewClass := anInstanceVariableNameForSourceClass.
 	! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 2/9/2024 10:03:41'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 7/24/2024 02:34:42'!
 apply
 	
 	self 
+		renameTmpVarsEqualsAsNewInsVarToCreate;
 		createNewClass;
 		initializeNewObject;
 		addInstanceVariableToAccessNewClass;
@@ -1348,15 +1447,15 @@ moveInstanceVariables
 		
 		]! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/4/2024 03:12:26'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/27/2024 19:50:38'!
 moveMethods
 	"self halt."
 	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
 		(MoveMethodRefactoring needParameterNameToMove: aMethodToMove from: sourceClass accessingThrough: variableToAccessToNewClass)
 			ifTrue: [
 				aMethodToMove isKeyword 
-					ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: ('a', sourceClass name) extraKeyword: ('with', sourceClass name) ]
-					ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: ('a', sourceClass name).]]
+					ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: sourceClass name withArticle withoutSeparators extraKeyword: ('with', sourceClass name) ]
+					ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: sourceClass name withArticle withoutSeparators.]]
 			ifFalse: [extraParameter := NonExtraParameterNameNeeded new].
 		
 		(MoveMethodRefactoring 
@@ -1382,6 +1481,19 @@ newSourceCodeForInitializeWhenExists: initializeCompiledMethod
 	newSourceInitialize := newSourceInitialize, (originalSourceInitialize copyFrom: (rangesForTmpVars last + 1) to: originalSourceInitialize size).
 	^newSourceInitialize! !
 
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/27/2024 03:08:27'!
+renameTmpVarsEqualsAsNewInsVarToCreate
+	|methodNode renameRefactoringForSelector |
+	methodsToExtract 
+		select: [ :aSelector | (sourceClass >> aSelector) hasArgumentOrTemporaryNamed: variableToAccessToNewClass ] 
+		thenDo: [ :aSelector | 
+			methodNode := (sourceClass >> aSelector) methodNode.
+			renameRefactoringForSelector := RenameTemporary 
+				fromOldVariableNode: (methodNode tempNodes select: [ :aTmpNode | aTmpNode name = variableToAccessToNewClass]) first
+				to: variableToAccessToNewClass, '_'
+				in: methodNode.
+			sourceClass compile: renameRefactoringForSelector apply].! !
+
 !ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 01:37:49'!
 setterSelectorFor: anInstanceVariableToMove 
 	| setterCandidate |
@@ -1393,7 +1505,7 @@ setterSelectorFor: anInstanceVariableToMove
 		setterCandidate := (setterCandidate copyFrom: 1 to: setterCandidate size -1), '_:'.].
 	^setterCandidate.! !
 
-!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 7/22/2024 02:12:04'!
+!ExtractClassRefactoring class methodsFor: 'instance creation' stamp: 'mc 7/24/2024 02:00:52'!
 from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  
 	
 	Smalltalk
@@ -1409,7 +1521,7 @@ from: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableN
 	anInstanceVariableNameForSourceClass ifNil: [self refactoringError: self variableToAccessNewClassShouldNotBeNilErrorMessage].
 	anInstanceVariableNameForSourceClass ifEmpty: [ self refactoringError: self variableToAccessNewClassShouldNotBeEmptyErrorMessage ].
 	anInstanceVariableNameForSourceClass first isLowercase ifFalse: [ self refactoringError: self variableToAccessNewClassShouldBeInLowercaseErrorMessage ].
-	sourceClass selectorsDo: [:sel | (sourceClass>>sel hasArgumentOrTemporaryNamed: anInstanceVariableNameForSourceClass) ifTrue: [self refactoringError: (self variable: anInstanceVariableNameForSourceClass alreadyExistsOnMethod: sel)]].
+	(sourceClass selectors copyWithoutAll: methodsToExtract ) do: [:sel | (sourceClass>>sel hasArgumentOrTemporaryNamed: anInstanceVariableNameForSourceClass) ifTrue: [self refactoringError: (self variable: anInstanceVariableNameForSourceClass alreadyExistsOnMethod: sel)]].
 	(sourceClass instVarNames includes: anInstanceVariableNameForSourceClass  ) ifTrue: [self refactoringError: self variableToAccessNewClassShouldNotBeInUseErrorMessage].
 	
 	^self new initializeFrom: sourceClass to: targetClassName instanceVariableNamed: anInstanceVariableNameForSourceClass instVarToExtract: instVarToExtract methodToExtract: methodsToExtract  ! !
