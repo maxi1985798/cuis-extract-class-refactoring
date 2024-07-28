@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6350] on 28 July 2024 at 3:10:33 am'!
+'From Cuis6.3 [latest update: #6350] on 28 July 2024 at 6:22:11 pm'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 33!
+!provides: 'ExtractClassRefactoring' 1 34!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -1370,6 +1370,18 @@ dontMoveMethod: selectorToMove
 
 	^ methodsToExtract remove: selectorToMove! !
 
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/28/2024 18:19:37'!
+extraParameterFor: aMethodToMove
+	| extraParameter parameterName |
+	(MoveMethodRefactoring needParameterNameToMove: aMethodToMove from: sourceClass accessingThrough: variableToAccessToNewClass)
+		ifTrue: [
+			parameterName := self parameterNameForSourceClass: aMethodToMove.
+			aMethodToMove isKeyword 
+				ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: parameterName extraKeyword: ('with', sourceClass name) ]
+				ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: parameterName.]]
+		ifFalse: [extraParameter := NonExtraParameterNameNeeded new].
+	^extraParameter! !
+
 !ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 2/23/2024 02:27:52'!
 getterSelectorFor: anInstanceVariableToMove 
 	| getterCandidate |
@@ -1448,17 +1460,11 @@ moveInstanceVariables
 		
 		]! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/28/2024 02:53:22'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/28/2024 18:20:44'!
 moveMethods
 	"self halt."
-	^ methodsToExtract do: [ :aMethodToMove | |extraParameter parameterName|
-		(MoveMethodRefactoring needParameterNameToMove: aMethodToMove from: sourceClass accessingThrough: variableToAccessToNewClass)
-			ifTrue: [
-				parameterName := self parameterNameForSourceClass: aMethodToMove.
-				aMethodToMove isKeyword 
-					ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: parameterName extraKeyword: ('with', sourceClass name) ]
-					ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: parameterName.]]
-			ifFalse: [extraParameter := NonExtraParameterNameNeeded new].
+	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
+		extraParameter := self extraParameterFor: aMethodToMove.
 		
 		(MoveMethodRefactoring 
 			methodNamed: aMethodToMove
