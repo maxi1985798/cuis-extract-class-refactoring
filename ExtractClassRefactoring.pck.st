@@ -1,6 +1,6 @@
-'From Cuis6.3 [latest update: #6350] on 27 July 2024 at 8:14:26 pm'!
+'From Cuis6.3 [latest update: #6350] on 28 July 2024 at 3:10:33 am'!
 'Description '!
-!provides: 'ExtractClassRefactoring' 1 32!
+!provides: 'ExtractClassRefactoring' 1 33!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -1296,15 +1296,15 @@ test116InstVarToCreateCanBeAsTmpInOneMethodButThatMethodShouldBeMoved
 	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
 ! !
 
-!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 7/27/2024 19:43:38'!
-ttttest117InstVarToCreateCanBeAsTmpInOneMethodButThatMethodShouldBeMoved
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 7/28/2024 03:09:24'!
+test117InstVarToCreateCanBeAsParameterInOneMethodButThatMethodShouldBeMoved
 	
 	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
 	targetClassName := #TargetClass.
 	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'counter'.
 	instVarsToExtract := OrderedCollection new.
 	methodsToExtract := OrderedCollection new.
-	sourceClass compile: 'm1: aSourceClass |aaTmp | 1.' .
+	sourceClass compile: 'm1: aSourceClass aSourceClass+1.' .
 	sourceClass compile: 'counterReset
 	counter := 1.
 	^counter' .
@@ -1322,7 +1322,8 @@ ttttest117InstVarToCreateCanBeAsTmpInOneMethodButThatMethodShouldBeMoved
 	targetClass := (Smalltalk classNamed: #TargetClass).
 	self assert: [ targetClass notNil ].
 	self assert: 1 equals: targetClass instVarNames size.
-	self assert: 'm1 |aaTmp aCounter_| ^aCounter_ := 1.' equals: (targetClass sourceCodeAt: #m1).
+	self assert: 'm1: aSourceClass withSourceClass: aSourceClass_ aSourceClass+1.
+	^aSourceClass_.' equals: (targetClass sourceCodeAt: #m1:withSourceClass:).
 	self assert: 'counterReset
 	aCounter counter: 1.
 	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
@@ -1337,7 +1338,7 @@ initializeFrom: aSourceClassName to: aTargetClassName instanceVariableNamed: anI
 	variableToAccessToNewClass := anInstanceVariableNameForSourceClass.
 	! !
 
-!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 7/24/2024 02:34:42'!
+!ExtractClassRefactoring methodsFor: 'applying' stamp: 'mc 7/28/2024 02:35:27'!
 apply
 	
 	self 
@@ -1447,15 +1448,16 @@ moveInstanceVariables
 		
 		]! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/27/2024 19:50:38'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/28/2024 02:53:22'!
 moveMethods
 	"self halt."
-	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
+	^ methodsToExtract do: [ :aMethodToMove | |extraParameter parameterName|
 		(MoveMethodRefactoring needParameterNameToMove: aMethodToMove from: sourceClass accessingThrough: variableToAccessToNewClass)
 			ifTrue: [
+				parameterName := self parameterNameForSourceClass: aMethodToMove.
 				aMethodToMove isKeyword 
-					ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: sourceClass name withArticle withoutSeparators extraKeyword: ('with', sourceClass name) ]
-					ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: sourceClass name withArticle withoutSeparators.]]
+					ifTrue: [extraParameter := ExtraParameterNameNeededAndExtraKeyword parameterName: parameterName extraKeyword: ('with', sourceClass name) ]
+					ifFalse: [extraParameter := ExtraParameterNameNeeded parameterName: parameterName.]]
 			ifFalse: [extraParameter := NonExtraParameterNameNeeded new].
 		
 		(MoveMethodRefactoring 
@@ -1480,6 +1482,15 @@ newSourceCodeForInitializeWhenExists: initializeCompiledMethod
 	newSourceInitialize := 'initialize', String newLineString, String tab, codeForTemporaries, String newLineString, String tab, variableToAccessToNewClass, ' := ', targetClassName, ' new.'.
 	newSourceInitialize := newSourceInitialize, (originalSourceInitialize copyFrom: (rangesForTmpVars last + 1) to: originalSourceInitialize size).
 	^newSourceInitialize! !
+
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/28/2024 03:06:57'!
+parameterNameForSourceClass: aSelector
+	
+	| defaultParamterName |
+	defaultParamterName := sourceClass name withArticle withoutSeparators.
+	((sourceClass >> aSelector) methodNode arguments anySatisfy: [ :anArgument | anArgument name  = defaultParamterName])
+		ifTrue: [^defaultParamterName, '_'].
+	^defaultParamterName! !
 
 !ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/27/2024 03:08:27'!
 renameTmpVarsEqualsAsNewInsVarToCreate
