@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6611] on 24 September 2024 at 12:14:04 am'!
+'From Cuis7.1 [latest update: #6611] on 24 September 2024 at 1:16:17 am'!
 'Description Udated to Cuis 7.1'!
-!provides: 'ExtractClassRefactoring' 1 37!
+!provides: 'ExtractClassRefactoring' 1 38!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
@@ -704,18 +704,21 @@ moveInstanceVariables
 		
 		]! !
 
-!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 7/28/2024 18:20:44'!
+!ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 9/24/2024 01:14:12'!
 moveMethods
 	"self halt."
 	^ methodsToExtract do: [ :aMethodToMove | |extraParameter|
 		extraParameter := self extraParameterFor: aMethodToMove.
-		
-		(MoveMethodRefactoring 
+		[(MoveMethodRefactoring 
 			methodNamed: aMethodToMove
 			from: sourceClass 
 			to: (Smalltalk classNamed: targetClassName)
 			accessingThrough: variableToAccessToNewClass
-			parameterNeeded: extraParameter) apply.]! !
+			parameterNeeded: extraParameter) apply
+			]
+			on: RefactoringWarning 
+			do: [:ex | ex resume]
+		]! !
 
 !ExtractClassRefactoring methodsFor: 'private' stamp: 'mc 1/5/2024 01:23:51'!
 newSourceCodeForInitializeWhenExists: initializeCompiledMethod 
@@ -1696,6 +1699,33 @@ test117InstVarToCreateCanBeAsParameterInOneMethodButThatMethodShouldBeMoved
 	aCounter counter: 1.
 	^aCounter counter' equals: (sourceClass sourceCodeAt: #counterReset).
 ! !
+
+!ExtractClassRefactoringTest methodsFor: 'tests' stamp: 'mc 9/24/2024 01:00:56'!
+test118ExtractClassCanOverrideMethodsOfObjectClass
+	
+	| targetClassName sourceClass instVarsToExtract methodsToExtract refactoring targetClass |
+	targetClassName := #TargetClass.
+	sourceClass := self createClassNamed: #SourceClass instanceVariableNames: 'iv1'.
+	instVarsToExtract := OrderedCollection new.
+	methodsToExtract := OrderedCollection new.
+	sourceClass compile: 'name ^1.' .
+	methodsToExtract add: #name.
+	
+	
+	refactoring := ExtractClassRefactoring 
+						from: sourceClass
+						to: targetClassName
+						instanceVariableNamed: 'aTargetClass' 
+						instVarToExtract: instVarsToExtract
+						methodToExtract: methodsToExtract.
+	refactoring apply.
+	
+	targetClass := Smalltalk classNamed: #TargetClass.
+	self assert: [ targetClass notNil ].
+	self assert: 0 equals: targetClass instVarNames size.
+	self assert: 'name
+	^aTargetClass name.' equals: (sourceClass sourceCodeAt: #name).
+	self assert: 'name ^1.' equals: (targetClass sourceCodeAt: #name).! !
 
 !LabeledInput methodsFor: '*ExtractClassRefactoring-as yet unclassified' stamp: 'mc 1/17/2024 19:25:32'!
 emptyTextDisplayMessage: aString
