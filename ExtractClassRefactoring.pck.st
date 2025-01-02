@@ -1,8 +1,18 @@
-'From Cuis7.1 [latest update: #6611] on 24 September 2024 at 1:16:17 am'!
+'From Cuis7.1 [latest update: #6611] on 2 January 2025 at 2:51:57 am'!
 'Description Udated to Cuis 7.1'!
-!provides: 'ExtractClassRefactoring' 1 38!
+!provides: 'ExtractClassRefactoring' 1 39!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
+
+!classDefinition: #ExtractClassMenu category: #ExtractClassRefactoring!
+Object subclass: #ExtractClassMenu
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ExtractClassRefactoring'!
+!classDefinition: 'ExtractClassMenu class' category: #ExtractClassRefactoring!
+ExtractClassMenu class
+	instanceVariableNames: ''!
 
 !classDefinition: #ExtractClassObjectRequest category: #ExtractClassRefactoring!
 Object subclass: #ExtractClassObjectRequest
@@ -12,16 +22,6 @@ Object subclass: #ExtractClassObjectRequest
 	category: 'ExtractClassRefactoring'!
 !classDefinition: 'ExtractClassObjectRequest class' category: #ExtractClassRefactoring!
 ExtractClassObjectRequest class
-	instanceVariableNames: ''!
-
-!classDefinition: #TesisExtractClassRefactoringMenu category: #ExtractClassRefactoring!
-Object subclass: #TesisExtractClassRefactoringMenu
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ExtractClassRefactoring'!
-!classDefinition: 'TesisExtractClassRefactoringMenu class' category: #ExtractClassRefactoring!
-TesisExtractClassRefactoringMenu class
 	instanceVariableNames: ''!
 
 !classDefinition: #ExtractClassForm category: #ExtractClassRefactoring!
@@ -65,6 +65,19 @@ ExtractClassRefactoringTest class
 	instanceVariableNames: ''!
 
 
+!ExtractClassMenu class methodsFor: 'menu & kbd shortcuts' stamp: 'HAW 12/31/2024 18:49:35'!
+classListMenuSpec
+
+	^#(
+		#(1025		'Extract Class...' 					nil 	window 			contextualExtractClass 									newFolderIcon)
+	)! !
+
+!ExtractClassMenu class methodsFor: 'initialization' stamp: 'jmv 7/30/2024 14:53:42'!
+initialize
+
+	BrowserWindow at: #classListMenuSpec registerMenuAndShortcutsSpecProvider:
+		(MessageSend receiver: self selector: #classListMenuSpec).! !
+
 !ExtractClassObjectRequest methodsFor: 'accessing' stamp: 'mc 1/5/2024 01:23:50'!
 instanceVariablesToExtract
 
@@ -96,24 +109,6 @@ newWithNameModel: aNewClassNameModel methodsToMoveModel: aMessageListModel insta
 		methodsToMoveModel: aMessageListModel 
 		instanceVariableListModel: anInstanceVariableListModel 
 		variableNameToAccessThroughModel: aVariableNameToAccessNewClassModel ! !
-
-!TesisExtractClassRefactoringMenu class methodsFor: 'menu & kbd shortcuts' stamp: 'jmv 7/30/2024 14:43:38'!
-classListMenuSpec
-	"
-	BrowserWindow at: #classListMenuSpec registerMenuAndShortcutsSpecProvider:
-		(MessageSend receiver: TesisExtractClassRefactoringMenu selector: #classListMenuSpec).
-	Do this in TesisExtractClassRefactoringMenu class >> initialize
-	"
-	^#(
-		#(1120 		'-----')
-		#(1123		'Extract class...' 					nil 	window 			contextualExtractClass 									newFolderIcon)
-	)! !
-
-!TesisExtractClassRefactoringMenu class methodsFor: 'initialization' stamp: 'jmv 7/30/2024 14:53:42'!
-initialize
-
-	BrowserWindow at: #classListMenuSpec registerMenuAndShortcutsSpecProvider:
-		(MessageSend receiver: self selector: #classListMenuSpec).! !
 
 !ExtractClassForm methodsFor: 'initialization' stamp: 'mc 1/16/2024 23:13:47'!
 initializeWithModel: aModel 
@@ -1774,4 +1769,4 @@ contextualExtractClass
 	classToRefactor := model selectedClassOrMetaClass.
 
 	classToRefactor ifNotNil: [(ExtractClassApplier applyOn: classToRefactor) value.].! !
-TesisExtractClassRefactoringMenu initialize!
+ExtractClassMenu initialize!
