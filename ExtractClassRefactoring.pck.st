@@ -1,6 +1,7 @@
-'From Cuis7.1 [latest update: #6611] on 2 January 2025 at 2:51:57 am'!
+'From Cuis7.1 [latest update: #6611] on 15 March 2025 at 7:19:27 pm'!
 'Description Udated to Cuis 7.1'!
-!provides: 'ExtractClassRefactoring' 1 39!
+!provides: 'ExtractClassRefactoring' 1 40!
+!requires: 'ComplexRefactorings' 1 9 nil!
 SystemOrganization addCategory: #ExtractClassRefactoring!
 
 
